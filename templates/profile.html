@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block main %}
+    
+    <div class="section" style="text-align: left;">
+
+        <table class="table table-bordered" style="max-width: 600px; margin: auto;">
+            <tbody>
+                <tr>
+                    <th>Username</th>
+                    <td>{{ user.user_name }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ user.email }}</td>
+                </tr>
+                <tr>
+                    <th>User Type</th>
+                    <td>{{ user.user_type }}</td>
+                </tr>
+                {% if user.first_name and user.last_name %}
+                    <tr>
+                        <th>Full Name</th>
+                        <td>{{ user.first_name }} {{ user.last_name }}</td>
+                    </tr>
+                {% endif %}
+                {% if user.latitude %}
+                    <tr>
+                        <th>Latitude</th>
+                        <td>{{ user.latitude }}</td>
+                    </tr>
+                {% endif %}
+                {% if user.longitude %}
+                    <tr>
+                        <th>Longitude</th>
+                        <td>{{ user.longitude }}</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+    </div>
+
+    <div class="section">
+        <form action="change_password" method="get">
+            <button type="submit" class="btn btn-primary">Change Password</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <form action="edit_profile" method="get">
+            <button type="submit" class="btn btn-success">Edit Profile</button>
+        </form>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Index
+{% endblock %}
+
+{% block main %}
+    {% if search_result %}
+
+    <div class="section">
+        <h3>Search results for: "{{ q }}"</h3>
+    </div>
+
+        {% for location in search_result %}
+        <div class="section">
+            <a href="/view?location_id={{ location[0] }}" class="btn btn-primary btn-lg">{{ location[2] }}</a>
+        </div>
+        {% endfor %}
+
+    {% else %}
+        
+        <div class="section">
+            <h3>Sorry, we were not able to find a match.</h3>
+            <h3>Please try again.</h3>
+        </div>
+
+    {% endif %}
+{% endblock %}

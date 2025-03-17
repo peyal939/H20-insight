@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Index
+{% endblock %}
+
+{% block main %}
+
+    {% if session["user_id"] %}
+
+        <div class="container mt-4">
+
+            <form action="" method="POST" class="section">
+                <div class="input-group mb-3">
+                    <input type="search" class="form-control" placeholder="Location Name" required="true" name="q">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </div>
+            </form>
+            
+            {% if session["user_type"] == "A" %}
+                <form action="/admin" class="section">
+                    <button type="submit" class="btn btn-primary">Admin Dashboard</button>
+                </form>
+            {% endif %}
+            
+            {% if (session["user_type"] == "A") or (session["user_type"] == "R") %}
+                <form action="/add_location" class="section">
+                    <button type="submit" class="btn btn-success">Add Location</button>
+                </form>
+            {% endif %}
+
+            <form action="/compare_between_locations" method="get" class="section">
+                <button type="submit" class="btn btn-success">Compare data between locations</button>
+            </form>
+            
+            <form action="/random_location" class="section">
+                <button type="submit" class="btn btn-warning">View Random Location Data</button>
+            </form>
+
+        </div>
+
+    {% endif %}
+
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Support Form
+{% endblock %}
+
+{% block header %}
+    : <a href="/support" class="main_page_link">Support</a> Form
+{% endblock %}
+
+{% block main %}
+    
+    <form action="/support_form" method="post" class="section">
+
+        <div  class="section">
+            <input autocomplete="off" autofocus name="subject" placeholder="Subject" type="text" required>
+        </div>
+
+        <div class="section">
+            <b><label>Support Request Description (Mandatory): </label></b>
+        </div>
+
+        <div  class="section">
+            <textarea name="description" rows="4" cols="50" required></textarea>
+        </div>
+
+        <button type="submit">Submit ticket</button>
+
+    </form>
+
+{% endblock %}

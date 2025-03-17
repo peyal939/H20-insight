@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Admin 
+{% endblock %}
+
+{% block header %}
+    : <a href="/admin" class="main_page_link">Admin</a> Users
+{% endblock %}
+
+{% block main %}
+
+    {% if users %}
+    
+    <div class="container">
+        <div class="section"></div>
+            
+            <table class="table table-bordered table-striped">
+                
+                <thead style="text-align: center;">
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>User Type</th>
+                </thead>
+                
+                <tbody>
+                    {% for user in users %}
+                        <tr> 
+                           <td> <a href="admin_user_edit?user_id={{ user[0] }}"> {{ user[0] }} </a></td>
+                           <td> <a href="admin_user_edit?user_id={{ user[0] }}"> {{ user[1] }} </a></td>
+                            <td> {{ user[2] }} </td>
+                        </tr>     
+                    {% endfor %}
+                </tbody>
+            
+            </table>
+        
+        </div>
+    </div>
+
+    {% else %}
+
+        <h1>There is no user.</h1>
+
+    {% endif %}
+
+{% endblock %}

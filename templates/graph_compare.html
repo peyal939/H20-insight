@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Comparison Graph</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body class="container mt-4">
+
+    <h1 class="text-center mb-4">Comparison between <b>{{ date_dic.left }}</b> and <b>{{ date_dic.right }}</b> of <b>{{ location_data.location_name }}</b></h1>
+    
+    <div class="row">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">pH</h2>
+                    <canvas id="phChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">BOD (mg/ml)</h2>
+                    <canvas id="bodChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    
+    </div>
+
+    <div class="row mt-4">
+  
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">COD (mg/ml)</h2>
+                    <canvas id="codChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Temperature (ᵒC)</h2>
+                    <canvas id="temperatureChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-4">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Ammonia (mg/ml)</h2>
+                    <canvas id="ammoniaChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Arsenic (mg/ml)</h2>
+                    <canvas id="arsenicChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-4">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Calcium (mg/ml)</h2>
+                    <canvas id="calciumChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">EC (µS/cm)</h2>
+                    <canvas id="ecChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-4">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Coliform (Faecal) (N/100ml)</h2>
+                    <canvas id="coliformChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Hardness (mg/ml)</h2>
+                    <canvas id="hardnessChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-4">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Lead (mg/ml)</h2>
+                    <canvas id="lead_pbChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Nitrogen (mg/ml)</h2>
+                    <canvas id="nitrogenChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-4">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Sodium (mg/ml)</h2>
+                    <canvas id="sodiumChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Sulfate (mg/ml)</h2>
+                    <canvas id="sulfateChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row mt-4">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Tss (mg/ml)</h2>
+                    <canvas id="tssChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Turbidity (NTU)</h2>
+                    <canvas id="turbidityChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <div class="row mt-4">
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="text-center">Tds (mg/ml)</h2>
+                    <canvas id="tdsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    
+    </div>
+
+    <script>
+
+        var location1Data = {{ location_1_data | tojson | safe }};
+
+        var location2Data = {{ location_2_data | tojson | safe }};
+
+        var date = {{ date_dic | tojson | safe }}
+
+        function createBarChart(canvasId, label, data1, data2) {
+        var ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [date.left, date.right],
+                datasets: [{
+                    label: label,
+                    backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
+                    data: [data1, data2]
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Set to false to hide the legend
+                    }
+                }
+            }
+        });
+    }
+
+        // Generate charts for each comparison
+        createBarChart('phChart', 'pH', location1Data.ph, location2Data.ph);
+        createBarChart('bodChart', 'BOD', location1Data.bod, location2Data.bod);
+        createBarChart('codChart', 'COD', location1Data.cod, location2Data.cod);
+        createBarChart('temperatureChart', 'Temperature', location1Data.temperature, location2Data.temperature);
+        createBarChart('ammoniaChart', 'Ammonia', location1Data.ammonia, location2Data.ammonia);
+        createBarChart('arsenicChart', 'Arsenic', location1Data.arsenic, location2Data.arsenic);
+        createBarChart('calciumChart', 'Calcium', location1Data.calcium, location2Data.calcium);
+        createBarChart('ecChart', 'Ec', location1Data.ec, location2Data.ec);
+        createBarChart('coliformChart', 'Coliform', location1Data.coliform, location2Data.coliform);
+        createBarChart('hardnessChart', 'Hardness', location1Data.hardness, location2Data.hardness);
+        createBarChart('lead_pbChart', 'Lead', location1Data.lead_pb, location2Data.lead_pb);
+        createBarChart('nitrogenChart', 'Nitrogen', location1Data.nitrogen, location2Data.nitrogen);
+        createBarChart('sodiumChart', 'Sodium', location1Data.sodium, location2Data.sodium);
+        createBarChart('sulfateChart', 'Sulfate', location1Data.sulfate, location2Data.sulfate);
+        createBarChart('tssChart', 'Tss', location1Data.tss, location2Data.tss);
+        createBarChart('turbidityChart', 'Turbidity', location1Data.turbidity, location2Data.turbidity);
+        createBarChart('tdsChart', 'Tds', location1Data.tds, location2Data.tds);
+        // Add more charts for other comparisons
+    </script>
+
+</body>
+</html>

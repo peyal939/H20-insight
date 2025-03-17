@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add location
+{% endblock %}
+
+{% block header %}
+    : Add location
+{% endblock %}
+
+{% block main %}
+
+    <form action="/add_location" method="post" class="section">
+
+        <div  class="section">
+            <input autocomplete="off" autofocus name="location_name" placeholder="Name (Unique)" type="text">
+        </div>
+
+        <div class="section">
+            <label>Location description (optional) : </label>
+        </div>
+
+        <div  class="section">
+            <textarea name="description" rows="4" cols="50"></textarea>
+        </div>
+
+        <button type="submit">Add</button>
+
+    </form>
+
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit location
+{% endblock %}
+
+{% block header %}
+    : Edit location
+{% endblock %}
+
+{% block main %}
+    
+    <form action="edit_location_function" class="section" method="post">
+        <div class="section">
+            <h3>You are now editing "{{ location_data.location_name }}"</h3>
+        </div>
+        
+        <div class="section">
+            <label><b>Location description: </b></label>
+        </div>
+
+        <div  class="section">
+            <textarea name="description" rows="4" cols="50">{% if location_data.description %} {{ location_data.description }} {% endif %}</textarea>
+        </div>
+        
+        <div  class="section">
+            <input autocomplete="off" name="latitude" placeholder="Latitude" type="number" step="any">
+        </div>
+        
+        <div  class="section">
+            <input autocomplete="off" name="longitude" placeholder="Longitude" type="number" step="any">
+        </div>
+
+        <input type="hidden" name="location_id" value="{{ location_data.location_id }}">
+
+        <button type="submit">Submit</button>
+    </form>
+ 
+{% endblock %}

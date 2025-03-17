@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Compare
+{% endblock %}
+
+{% block main %}
+
+    <form class="section" action="/compare_between_data" method="POST">
+        
+        <h2><label>Compare between : </label></h2>
+        
+        {% if data_list %}
+            
+
+                <select name="data_id_1">
+                    {% for i in data_list %}
+                        <option value="{{ i[0] }}">{{ i[3] }}</option>
+                    {% endfor %}
+                </select>
+                
+                <h4>and</h4>
+                
+                <select name="data_id_2">
+                    {% for i in data_list %}
+                        <option value="{{ i[0] }}">{{ i[3] }}</option>
+                        {% endfor %}
+                </select> <br> <br>
+            
+            
+
+        {% endif %}
+
+        <button type="submit" name="compare_in" value="table">Tabular Comparison</button>
+    
+        <button type="submit" name="compare_in" value="graph">Graphical Comparison</button>
+    
+    </form>
+
+    
+
+{% endblock %}

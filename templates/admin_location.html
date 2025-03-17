@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Admin
+{% endblock %}
+
+{% block header %}
+    : <a href="/admin" class="main_page_link">Admin</a> Locations
+{% endblock %}
+
+{% block main %}
+
+    {% if locations %}
+    
+    <div class="container">
+        <div class="section"></div>
+            
+            <table class="table table-bordered table-striped">
+                
+                <thead style="text-align: center;">
+                    <th>ID</th>
+                    <th>Location Name</th>
+                    <th>Date Submitted</th>
+                </thead>
+                
+                <tbody>
+                    {% for location in locations %}
+                        <tr> 
+                           <td> <a href="admin_location_edit?location_id={{ location[0] }}"> {{ location[0] }} </a></td>
+                           <td> <a href="admin_location_edit?location_id={{ location[0] }}"> {{ location[1] }} </a></td>
+                            <td> {{ location[2] }} </td>
+                        </tr>     
+                    {% endfor %}
+                </tbody>
+            
+            </table>
+        
+        </div>
+    </div>
+
+    {% else %}
+
+        <h1>There is no location.</h1>
+
+    {% endif %}
+
+{% endblock %}

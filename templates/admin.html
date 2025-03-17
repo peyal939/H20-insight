@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Admin Dashbord
+{% endblock %}
+
+{% block header %}
+    : <a href="/admin" class="main_page_link">Admin</a>
+{% endblock %}
+
+
+{% block main %}
+
+<div class="session">
+
+    <form action="/admin_users" class="section">
+        <button type="submit" class="btn btn-primary">Users</button>
+    </form>
+
+    <form action="/admin_locations" class="section">
+        <button type="submit" class="btn btn-primary">Locations</button>
+    </form>
+    
+
+    <form action="/resolved_tickets" class="section">
+        <button type="submit" class="btn btn-primary">Resolved Tickets</button>
+    </form>
+
+    <form action="/support" class="section">
+        <button type="submit" class="btn btn-primary">Unresolved Tickets</button>
+    </form>
+
+</div>
+
+{% endblock %}

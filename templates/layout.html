@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width">
+
+    <!-- Add these links in the head of your layout.html file -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styles.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    
+    <title>H2OInsight : {% block title %}{% endblock %}</title>
+
+    <style>
+        .header {
+            position: relative;
+        }
+
+        .user-profile-btn,
+        .support-btn,
+        .logout-btn {
+            position: absolute;
+            top: 10px;
+            font-size: 14px; /* Adjust the font size as needed */
+        }
+
+        .user-profile-btn {
+            right: 10px;
+        }
+
+        .support-btn {
+            right: 120px; /* Adjust the right position as needed */
+        }
+
+        .logout-btn {
+            right: 230px; /* Adjust the right position as needed */
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="header">
+        
+        <a href="/" class="main_page_link"><h1>H2OInsight</a>{% block header %}{% endblock %}</h1>
+
+        {% if session["user_id"] %}
+            <form action="/profile" class="user-profile-btn">
+                <button type="submit" class="btn btn-info">User Profile</button>
+            </form>
+
+            <form action="/support" class="support-btn">
+                <button type="submit" class="btn btn-info">Support</button>
+            </form>
+
+            <form action="/logout" class="logout-btn">
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        {% endif %}
+
+    </div>
+
+    {% block main %}{% endblock %}
+
+</body>
+
+</html>

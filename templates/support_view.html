@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Support View
+{% endblock %}
+
+{% block header %}
+    : <a href="/support" class="main_page_link">Support</a>
+{% endblock %}
+
+{% block main %}
+
+    <div class="section" style="text-align: center; max-width: 600px; margin: 0 auto;">
+
+        <h3>Status: {{ ticket_data.Status }}</h3>
+        <h3>Subject: {{ ticket_data.Subject }}</h3>
+        <h3>Ticket made on: {{ ticket_data.Date }}</h3>
+        <h3>Description:</h3>
+        <p>{{ ticket_data.Description }}</p>
+    
+    </div>
+
+    {% if messeges %}
+        {% for message in messeges %}
+            {% if message[1] == 'A' %}
+                <div class="message_admin" style="max-width: 600px; margin: 20px auto; background-color: #e6e6e6; padding: 10px; border-radius: 5px;">
+                    <h4 style="text-align: left; font-weight: bold;">Admin</h4>
+                    <div style="text-align: left;">Sent {{ message[3] }}</div>
+                    <p>{{ message[0] }}</p>
+                </div>
+            {% else %}
+                <div class="message_user" style="max-width: 600px; margin: 20px auto; background-color: #f2f2f2; padding: 10px; border-radius: 5px;">
+                    <h4 style="text-align: left; font-weight: bold;">{{ message[2] }}</h4>
+                    <div style="text-align: left;">Sent {{ message[3] }}</div>
+                    <p>{{ message[0] }}</p>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if not ticket_data.resolved %}
+        <form action="/send_massage" class="section" method="post" style="max-width: 600px; margin: 20px auto;">
+            <input type="text" name="massage" autofocus autocomplete="off" style="width: 80%; padding: 5px; margin-right: 5px; border: 1px solid #ccc; border-radius: 3px;">
+            <input type="hidden" name="ticket_id" value="{{ ticket_data.ticket_id }}">
+            <button type="submit" style="padding: 5px; background-color: #4CAF50; color: white; border: none; border-radius: 3px;">Send</button>
+        </form>
+    {% endif %}
+
+    {% if session.user_type == 'A' and not ticket_data.resolved %}
+        <form action="close_ticket" class="section" method="post" style="max-width: 600px; margin: 20px auto;">
+            <button type="submit" name="ticket_id" value="{{ ticket_data.ticket_id }}" style="padding: 5px; background-color: #f44336; color: white; border: none; border-radius: 3px;">Close Ticket</button>
+        </form>
+    {% endif %}
+
+{% endblock %}

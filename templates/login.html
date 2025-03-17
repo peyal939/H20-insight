@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block main %}
+    <div class="login-page">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="login-card">
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <h2 class="login-text-primary">Welcome Back</h2>
+                                <p class="text-muted">Please login to your account</p>
+                            </div>
+
+                            <form action="/login" method="post">
+                                <div class="form-group mb-3">
+                                    <label for="identification" class="form-label">Username or Email</label>
+                                    <input class="form-control login-form-control" id="identification" name="identification" type="text" required>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input class="form-control login-form-control" id="password" name="password" type="password" required>
+                                </div>
+
+                                <button class="login-btn-primary" type="submit">
+                                    LOGIN
+                                </button>
+                            </form>
+
+                            <div class="text-center mt-4">
+                                <p class="mb-0 text-muted">Don't have an account?</p>
+                                <form action="/register" method="get" class="mt-2">
+                                    <button class="login-btn-outline" type="submit">
+                                        REGISTER
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<style>
+/* Override header styles for login page */
+.header {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+}
+
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Location
+{% endblock %}
+
+{% block main %}
+
+    <div class="container mt-4">
+        <h2>Name: {{ location_data.location_name }}</h2>
+
+        {% if location_data.description is not none %}
+            <p>Description: {{ location_data.description }}</p>
+        {% endif %}
+
+        <div class="table-responsive mt-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col" id="parameter">Parameter Name</th>
+                        <th scope="col">{{ date[0] }}</th>
+                        <th scope="col">{{ date[1] }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tuple in parameter_data %}
+                        <tr>
+                            {% for data in tuple %}
+                                <td>{{ data }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

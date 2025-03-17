@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Compare
+{% endblock %}
+
+{% block main %}
+
+    <form class="section" action="/compare_between_locations" method="POST">
+            
+        <h2><label>Compare data between : </label></h2>
+        
+        {% if locations %}
+            
+
+                <select name="location_id_1">
+                    {% for location in locations %}
+                        <option value="{{ location.location_id }}">{{ location.location_name }}</option>
+                    {% endfor %}
+                </select>
+                
+                <h4>and</h4>
+                
+                <select name="location_id_2">
+                    {% for location in locations %}
+                            <option value="{{ location.location_id }}">{{ location.location_name }}</option>
+                        {% endfor %}
+                </select> <br> <br>
+            
+            
+
+        {% endif %}
+
+        <button type="submit" name="compare_in" value="table">Tabular Comparison</button>
+
+        <button type="submit" name="compare_in" value="graph">Graphical Comparison</button>
+
+    </form>
+
+{% endblock %}

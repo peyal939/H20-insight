@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block header %}
+    : Register
+{% endblock %}
+
+{% block main %}
+
+    <form action="/register" method="post"  class="section">
+
+        <div class="section">
+            <input autocomplete="off" name="first_name" placeholder="First Name" type="text">
+        </div>
+    
+        <div class="section">
+            <input autocomplete="off" name="last_name" placeholder="Last Name" type="text">
+        </div>
+
+        <div  class="section">
+            <input autocomplete="off" autofocus name="email" placeholder="Email (make sure it's correct)" type="email">
+        </div>
+
+        <div  class="section">
+            <input autocomplete="off" name="username" placeholder="Username" type="text">
+        </div>
+
+        <div  class="section">
+            <input name="password" placeholder="Password" type="password">
+        </div>
+
+        <div  class="section">
+            <input name="password_again" placeholder="Password (Again)" type="password">
+        </div>
+
+        <div class="section">
+            <select name="user_type">
+                <option value="V">Viewer</option>
+                <option value="R">Researcher</option>                
+            </select>
+        </div>
+
+        <button type="submit">Register</button>
+
+    </form>
+
+{% endblock %}

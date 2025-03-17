@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    All location data
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block main %}
+
+    {% if location_data %}
+
+        {% for i in location_data %}
+            
+            <div class="section">
+                <a href="view_data?data_id={{ i[0] }}" class="btn btn-primary btn-lg font-weight-bold">{{ i[3] }}</a>
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endblock %}

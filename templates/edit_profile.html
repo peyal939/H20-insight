@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit Profile
+{% endblock %}
+
+{% block header %}
+    : Edit Profile
+{% endblock %}
+    
+{% block main %}
+
+    <div class="section">
+        <h4>Leave the fields that you dont want to edit blank</h4> <br>
+        <form action="/edit_profile" method="post">
+            <input type="email" name="email" placeholder="Email" autocomplete="off"> <br><br>
+
+            <input type="number" step="any" autocomplete="off" name="latitude" placeholder="Latitude"> <br><br>
+            <input type="number" step="any" autocomplete="off" name="longitude" placeholder="Longitude"> <br><br>
+
+            <input type="text" autocomplete="off" name="first_name" placeholder="First Name"> <br><br>
+            <input type="text" autocomplete="off" name="last_name" placeholder="Last Name"> <br><br>
+            <br>
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+
+{% endblock %}

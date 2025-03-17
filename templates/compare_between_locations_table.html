@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Location
+{% endblock %}
+
+{% block main %}
+    <div class="container mt-4">
+        <h2 class="mb-3">Location Data</h2>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col" id="parameter">Parameter Name</th>
+                        <th scope="col">{{ location_data.location_name_1 }}</th>
+                        <th scope="col">{{ location_data.location_name_2 }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tuple in parameter_data %}
+                        <tr>
+                            {% for data in tuple %}
+                                <td>{{ data }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
