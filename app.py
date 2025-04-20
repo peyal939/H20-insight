@@ -1404,3 +1404,8 @@ def delete_data():
     else:
         return "INVALID REQUSET"
     
+
+# Add this at the end of the file
+if __name__ == "__main__":
+    app.run(debug=True)
+    
