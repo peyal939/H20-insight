@@ -5,38 +5,66 @@
 {% endblock %}
 
 {% block main %}
-
-    <form class="section" action="/compare_between_data" method="POST">
+<div class="max-w-3xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <!-- Form Header -->
+        <div class="bg-primary-600 text-white py-6 px-6">
+            <h2 class="text-2xl font-bold flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Compare Data Sets
+            </h2>
+        </div>
         
-        <h2><label>Compare between : </label></h2>
-        
-        {% if data_list %}
-            
-
-                <select name="data_id_1">
-                    {% for i in data_list %}
-                        <option value="{{ i[0] }}">{{ i[3] }}</option>
-                    {% endfor %}
-                </select>
+        <!-- Form Content -->
+        <div class="p-6">
+            <form action="/compare_between_data" method="POST" class="space-y-8">
+                {% if data_list %}
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label for="data_id_1" class="block text-sm font-medium text-gray-700">First Data Set:</label>
+                        <select id="data_id_1" name="data_id_1" class="w-full h-12 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition bg-white">
+                            {% for i in data_list %}
+                                <option value="{{ i[0] }}">{{ i[3] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="flex justify-center">
+                        <div class="rounded-full bg-primary-100 text-primary-800 py-1 px-4 text-sm font-medium">
+                            and
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label for="data_id_2" class="block text-sm font-medium text-gray-700">Second Data Set:</label>
+                        <select id="data_id_2" name="data_id_2" class="w-full h-12 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition bg-white">
+                            {% for i in data_list %}
+                                <option value="{{ i[0] }}">{{ i[3] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
                 
-                <h4>and</h4>
-                
-                <select name="data_id_2">
-                    {% for i in data_list %}
-                        <option value="{{ i[0] }}">{{ i[3] }}</option>
-                        {% endfor %}
-                </select> <br> <br>
-            
-            
-
-        {% endif %}
-
-        <button type="submit" name="compare_in" value="table">Tabular Comparison</button>
-    
-        <button type="submit" name="compare_in" value="graph">Graphical Comparison</button>
-    
-    </form>
-
-    
-
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                    <button type="submit" name="compare_in" value="table" class="w-full py-3 px-4 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Tabular Comparison
+                    </button>
+                    
+                    <button type="submit" name="compare_in" value="graph" class="w-full py-3 px-4 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                        </svg>
+                        Graphical Comparison
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -5,118 +5,132 @@
 {% endblock %}
 
 {% block main %}
-    <style>
-        .form-container {
-            width: 80%; /* Adjust the width as needed */
-            margin: auto; /* Center the form container */
-        }
-
-        table {
-            width: 100%; /* Make the table take up the full width of the form container */
-        }
-
-        td:first-child {
-            font-weight: bold;
-        }
-
-        td {
-            padding: 8px; /* Add padding for better spacing */
-        }
-
-
-
-        button {
-            width: 100%; /* Make the button take up the full width of its parent */
-            box-sizing: border-box; /* Include padding and border in the width */
-        }
-
-        .form-title {
-            font-size: 24px; /* Adjust the font size as needed */
-            font-weight: bold;
-            margin-bottom: 16px; /* Add margin for better spacing */
-        }
-    </style>
-
-<div class="container">
-    <div class="section form-container">
-        <div class="form-title">Data Input Form:</div>
-        <form action="/add_data" method="post">
-            <table>
-                    <tr>
-                        <td><label for="pH">pH:</label></td>
-                        <td><input type="number" step="any" id="pH"  required name="ph"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="BOD">BOD:</label></td>
-                        <td><input type="number" step="any" id="BOD"  required name="bod"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="COD">COD:</label></td>
-                        <td><input type="number" step="any" id="COD"  required name="cod"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="temperature">Temperature:</label></td>
-                        <td><input type="number" step="any" id="temperature"  required name="temperature"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="ammonia">Ammonia (mg/ml):</label></td>
-                        <td><input type="number" step="any" id="ammonia"  required name="ammonia"></td>
-                        
-                    </tr>
-                    <tr>
-                        <td><label for="arsenic">Arsenic (mg/ml):</label></td>
-                        <td><input type="number" step="any" id="arsenic"  required name="arsenic"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="calcium">Calcium (mg/ml):</label></td>
-                        <td><input type="number" step="any" id="calcium"  required name="calcium"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="EC">EC (µS/cm):</label></td>
-                        <td><input type="number" step="any" id="EC"  required name="ec"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="coliform">Coliform (Faecal) (N/100ml):</label></td>
-                        <td><input type="number" step="any" id="coliform"  required name="coliform"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="hardness">Hardness (mg/ml):</label></td>
-                        <td><input type="number" step="any" id="hardness"  required name="hardness"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="lead">Lead (mg/l):</label></td>
-                        <td><input type="number" step="any" id="lead"  required name="lead_pb"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="nitrogen">Nitrogen (Nitrate) (mg/l):</label></td>
-                        <td><input type="number" step="any" id="nitrogen"  required name="nitrogen"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="sodium">Sodium (mg/l):</label></td>
-                        <td><input type="number" step="any" id="sodium"  required name="sodium"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="sulfate">Sulphate (mg/l):</label></td>
-                        <td><input type="number" step="any" id="sulfate"  required name="sulfate"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="TSS">TSS (mg/l):</label></td>
-                        <td><input type="number" step="any" id="TSS"  required name="tss"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="turbidity">Turbidity (NTU):</label> </td>
-                        <td><input type="number" step="any" id="turbidity"  required name="turbidity"></td>
-                    </tr>
-                    <tr>
-                        <td><label for="turbidity">TDS :</label> </td>
-                        <td><input type="number" step="any" id="tds"  required name="tds"></td>
-                    </tr>
-
-
-                    <td colspan="2"><button type="submit" class="btn btn-primary">Submit</button></td>
-                    </tr>
-                </table>
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <!-- Form Header -->
+        <div class="bg-primary-600 text-white py-6 px-6">
+            <h2 class="text-2xl font-bold flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Water Quality Data Input Form
+            </h2>
+        </div>
+        
+        <!-- Form Content -->
+        <div class="p-6">
+            <form action="/add_data" method="post">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-1">
+                        <label for="pH" class="block text-sm font-medium text-gray-700">pH:</label>
+                        <input type="number" step="any" id="pH" name="ph" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="BOD" class="block text-sm font-medium text-gray-700">BOD:</label>
+                        <input type="number" step="any" id="BOD" name="bod" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="COD" class="block text-sm font-medium text-gray-700">COD:</label>
+                        <input type="number" step="any" id="COD" name="cod" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="temperature" class="block text-sm font-medium text-gray-700">Temperature:</label>
+                        <input type="number" step="any" id="temperature" name="temperature" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="ammonia" class="block text-sm font-medium text-gray-700">Ammonia (mg/ml):</label>
+                        <input type="number" step="any" id="ammonia" name="ammonia" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="arsenic" class="block text-sm font-medium text-gray-700">Arsenic (mg/ml):</label>
+                        <input type="number" step="any" id="arsenic" name="arsenic" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="calcium" class="block text-sm font-medium text-gray-700">Calcium (mg/ml):</label>
+                        <input type="number" step="any" id="calcium" name="calcium" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="EC" class="block text-sm font-medium text-gray-700">EC (µS/cm):</label>
+                        <input type="number" step="any" id="EC" name="ec" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="coliform" class="block text-sm font-medium text-gray-700">Coliform (Faecal) (N/100ml):</label>
+                        <input type="number" step="any" id="coliform" name="coliform" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="hardness" class="block text-sm font-medium text-gray-700">Hardness (mg/ml):</label>
+                        <input type="number" step="any" id="hardness" name="hardness" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="lead" class="block text-sm font-medium text-gray-700">Lead (mg/l):</label>
+                        <input type="number" step="any" id="lead" name="lead_pb" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="nitrogen" class="block text-sm font-medium text-gray-700">Nitrogen (Nitrate) (mg/l):</label>
+                        <input type="number" step="any" id="nitrogen" name="nitrogen" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="sodium" class="block text-sm font-medium text-gray-700">Sodium (mg/l):</label>
+                        <input type="number" step="any" id="sodium" name="sodium" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="sulfate" class="block text-sm font-medium text-gray-700">Sulphate (mg/l):</label>
+                        <input type="number" step="any" id="sulfate" name="sulfate" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="TSS" class="block text-sm font-medium text-gray-700">TSS (mg/l):</label>
+                        <input type="number" step="any" id="TSS" name="tss" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="turbidity" class="block text-sm font-medium text-gray-700">Turbidity (NTU):</label>
+                        <input type="number" step="any" id="turbidity" name="turbidity" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <label for="tds" class="block text-sm font-medium text-gray-700">TDS:</label>
+                        <input type="number" step="any" id="tds" name="tds" required
+                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <button type="submit" class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                        Submit Data
+                    </button>
+                </div>
             </form>
+        </div>
         </div>
     </div>
 {% endblock %}

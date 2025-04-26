@@ -3,74 +3,70 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, width=device-width">
 
-    <!-- Add these links in the head of your layout.html file -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styles.css') }}">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#e0f7fa',
+                            100: '#b2ebf2',
+                            200: '#80deea',
+                            300: '#4dd0e1',
+                            400: '#26c6da',
+                            500: '#00bcd4',
+                            600: '#00acc1',
+                            700: '#0097a7',
+                            800: '#00838f',
+                            900: '#006064'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <title>H2OInsight : {% block title %}{% endblock %}</title>
-
-    <style>
-        .header {
-            position: relative;
-        }
-
-        .user-profile-btn,
-        .support-btn,
-        .logout-btn {
-            position: absolute;
-            top: 10px;
-            font-size: 14px; /* Adjust the font size as needed */
-        }
-
-        .user-profile-btn {
-            right: 10px;
-        }
-
-        .support-btn {
-            right: 120px; /* Adjust the right position as needed */
-        }
-
-        .logout-btn {
-            right: 230px; /* Adjust the right position as needed */
-        }
-    </style>
-
 </head>
 
-<body>
+<body class="font-sans bg-gray-50">
+    <!-- Header based on screenshot -->
+    <header class="bg-primary-500 text-white py-4 px-8">
+        <div class="flex justify-between items-center">
+            <a href="/" class="text-white no-underline">
+                <h1 class="text-4xl font-semibold">H2OInsight{% block header %}{% endblock %}</h1>
+            </a>
 
-    <div class="header">
-        
-        <a href="/" class="main_page_link"><h1>H2OInsight</a>{% block header %}{% endblock %}</h1>
+            {% if session["user_id"] %}
+            <div class="flex space-x-2">
+                <a href="/profile" class="bg-white text-primary-500 hover:bg-gray-100 px-4 py-2 rounded text-sm font-medium">
+                    User Profile
+                </a>
+                <a href="/support" class="bg-white text-primary-500 hover:bg-gray-100 px-4 py-2 rounded text-sm font-medium">
+                    Support
+                </a>
+                <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium">
+                    Logout
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </header>
 
-        {% if session["user_id"] %}
-            <form action="/profile" class="user-profile-btn">
-                <button type="submit" class="btn btn-info">User Profile</button>
-            </form>
-
-            <form action="/support" class="support-btn">
-                <button type="submit" class="btn btn-info">Support</button>
-            </form>
-
-            <form action="/logout" class="logout-btn">
-                <button type="submit" class="btn btn-danger">Logout</button>
-            </form>
-        {% endif %}
-
-    </div>
-
-    {% block main %}{% endblock %}
-
+    <main class="py-6">
+        {% block main %}{% endblock %}
+    </main>
 </body>
 
 </html>

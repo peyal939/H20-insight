@@ -1061,7 +1061,7 @@ def edit_profile():
 @app.route("/change_password", methods=["GET", "POST"])
 def change_password():
     if request.method == "GET":
-        return render_template("chnage_password.html")
+        return render_template("change_password.html")
     
     if request.method == "POST":
         old_password = request.form.get("password_old")
