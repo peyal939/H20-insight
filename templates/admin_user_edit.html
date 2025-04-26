@@ -1,65 +1,58 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Admin Edit User
+    Edit User
 {% endblock %}
 
 {% block header %}
-    : Admin Edit User 
+    : Admin - Edit User
 {% endblock %}
-    
+
 {% block main %}
-
-    <div class="section">
-        <h4>Leave the fields that you dont want to edit blank.</h4> 
-        <h4>Username and email must be unique.</h4> 
-
-        <form action="/admin_user_edit" method="post">
-            First Name  <br>
-            <input type="text" autocomplete="off" name="first_name" placeholder="{{ user_data[4] }}"> <br><br>
-            Last Name <br>
-            <input type="text" autocomplete="off" name="last_name" placeholder="{{ user_data[5] }}"> <br><br>
-            Username <br>
-            <input type="text" name="user_name" placeholder="{{ user_data[0] }}" autocomplete="off"> <br><br>
-            Email <br>
-            <input type="email" name="email" placeholder="{{ user_data[1] }}" autocomplete="off"> <br><br>
-
-            New Password <br>
-            <input type="password" name="password" placeholder="New Password" autocomplete="off"> <br><br>
-            Re-enter Password <br>
-            <input type="password" name="password_again" placeholder="Re-enter Password" autocomplete="off"> <br><br>
-            Latitude <br>
-            <input type="number" step="any" autocomplete="off" name="latitude" placeholder="{{ user_data[2] }}"> <br><br>
-            Longitude <br>
-            <input type="number" step="any" autocomplete="off" name="longitude" placeholder="{{ user_data[3] }}"> <br><br>
-
-            User Type <br>
-            <select name="user_type">
-                <option value="V">Viewer</option>
-                <option value="R">Researcher</option>                
-            </select>
-
-            <br> <br>
-            <input hidden name="user_id" value="{{ user_id }}">
-            <button type="submit">Save Changes</button>
-        </form>
+    <div class="p-6 max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden border border-blue-100">
+            <div class="flex justify-between items-center p-4 border-b border-blue-100">
+                <h2 class="text-xl font-semibold text-blue-800">Edit User</h2>
+                <a href="/admin_user" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-2 px-4 rounded-md transition duration-200">
+                    Back to Users
+                </a>
+            </div>
+            
+            <form action="/admin_user_edit/{{ user.id }}" method="post" class="p-6">
+                <div class="grid grid-cols-1 gap-6 mb-6">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input type="text" id="username" name="username" value="{{ user.username }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    
+                    <div>
+                        <label for="is_admin" class="flex items-center text-sm font-medium text-gray-700">
+                            <input type="checkbox" id="is_admin" name="is_admin" value="1" {% if user.is_admin %}checked{% endif %} class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <span class="ml-2">Admin Access</span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">New Password (leave blank to keep current)</label>
+                        <input type="password" id="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                        <input type="password" id="confirmation" name="confirmation" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mt-8">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                        Update User
+                    </button>
+                    
+                    <a href="/admin_user_delete/{{ user.id }}" onclick="return confirm('Are you sure you want to delete this user?');" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                        Delete User
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <!--Delete user confirmation script-->
-    <script>
-        function confirm_delete() {
-            var confirmation = confirm("Are you sure you want to delete this user?");
-            if (confirmation) {
-                document.getElementById("delete_user_form").submit();
-            }
-        }
-    </script>
-
-    <div class="section">
-        <form action="delete_user" id="delete_user_form" method="post">
-            <button type="button" onclick="confirm_delete()" class="btn btn-danger">Delete User</button>
-            <input type="hidden" name="user_id" value="{{ user_id }}">
-        </form>
-    </div>
-
 {% endblock %}

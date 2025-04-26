@@ -1,39 +1,64 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Edit location
+    Edit Location
 {% endblock %}
 
 {% block header %}
-    : Edit location
+    : Edit Location
 {% endblock %}
 
 {% block main %}
+<div class="p-6 max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-blue-100">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4">
+            <h2 class="text-xl font-semibold text-white">Editing "{{ location_data.location_name }}"</h2>
+        </div>
+        
+        <form action="edit_location_function" method="post" class="p-6">
+            <input type="hidden" name="location_id" value="{{ location_data.location_id }}">
+            
+            <div class="space-y-6">
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Location Description</label>
+                    <textarea id="description" name="description" rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{% if location_data.description %}{{ location_data.description }}{% endif %}</textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="latitude" class="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+                        <input type="number" step="any" id="latitude" name="latitude" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter latitude" autocomplete="off">
+                        <p class="mt-1 text-xs text-gray-500">Value between -90 and 90</p>
+                    </div>
+                    
+                    <div>
+                        <label for="longitude" class="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+                        <input type="number" step="any" id="longitude" name="longitude" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Enter longitude" autocomplete="off">
+                        <p class="mt-1 text-xs text-gray-500">Value between -180 and 180</p>
+                    </div>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-200">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
     
-    <form action="edit_location_function" class="section" method="post">
-        <div class="section">
-            <h3>You are now editing "{{ location_data.location_name }}"</h3>
-        </div>
-        
-        <div class="section">
-            <label><b>Location description: </b></label>
-        </div>
-
-        <div  class="section">
-            <textarea name="description" rows="4" cols="50">{% if location_data.description %} {{ location_data.description }} {% endif %}</textarea>
-        </div>
-        
-        <div  class="section">
-            <input autocomplete="off" name="latitude" placeholder="Latitude" type="number" step="any">
-        </div>
-        
-        <div  class="section">
-            <input autocomplete="off" name="longitude" placeholder="Longitude" type="number" step="any">
-        </div>
-
-        <input type="hidden" name="location_id" value="{{ location_data.location_id }}">
-
-        <button type="submit">Submit</button>
-    </form>
- 
+    <div class="mt-6 text-center">
+        <a href="/view?location_id={{ location_data.location_id }}" class="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg>
+            Back to Location View
+        </a>
+    </div>
+</div>
 {% endblock %}

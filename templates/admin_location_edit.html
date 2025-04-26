@@ -1,48 +1,87 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Admin Edit Location
+    Edit Location
 {% endblock %}
 
 {% block header %}
-    : Admin Edit Location 
+    : Admin - Edit Location
 {% endblock %}
     
 {% block main %}
+<div class="p-6 max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-blue-100">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4">
+            <h2 class="text-xl font-semibold text-white">Edit Location Details</h2>
+        </div>
+        
+        <form action="/admin_location_edit" method="post" class="p-6">
+            <input type="hidden" name="location_id" value="{{ location_id }}">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="location_name" class="block text-sm font-medium text-gray-700 mb-1">Location Name</label>
+                    <input type="text" id="location_name" name="location_name" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="{{ location_data[0] }}" autocomplete="off">
+                    <p class="mt-1 text-xs text-gray-500">Must be unique</p>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="description" name="description" rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="{{ location_data[1] }}"></textarea>
+                </div>
+                
+                <div>
+                    <label for="latitude" class="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+                    <input type="number" step="any" id="latitude" name="latitude" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="{{ location_data[2] }}" autocomplete="off">
+                </div>
+                
+                <div>
+                    <label for="longitude" class="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+                    <input type="number" step="any" id="longitude" name="longitude" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="{{ location_data[3] }}" autocomplete="off">
+                </div>
+            </div>
+            
+            <div class="flex justify-between pt-4 border-t border-gray-200">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                    Save Changes
+                </button>
+                
+                <button type="button" onclick="confirm_delete()" 
+                        class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                    Delete Location
+                </button>
+            </div>
+        </form>
+    </div>
     
-<div class="section">
-    <h4>Leave the fields that you dont want to edit blank.</h4> 
-    <h4>Location name must be unique.</h4> 
-    <form action="/admin_location_edit" method="post">
-        Location Name <br>
-        <input type="text" autocomplete="off" name="location_name" placeholder="{{ location_data[0] }}"> <br><br>
-        Description <br>
-        <input type="text" autocomplete="off" name="description" placeholder="{{ location_data[1] }}"> <br><br>
-        Latitude <br>
-        <input type="number" step="any" autocomplete="off" name="latitude" placeholder="{{ location_data[2] }}"> <br><br>
-        Longitude <br>
-        <input type="number" step="any" autocomplete="off" name="longitude" placeholder="{{ location_data[3] }}"> <br><br>
-        <br> <br>
-        <input hidden name="location_id" value="{{ location_id }}">
-        <button type="submit">Save Changes</button>
-    </form>
+    <div class="mt-6 text-center">
+        <a href="/admin_location" class="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg>
+            Back to Locations
+        </a>
+    </div>
 </div>
 
-<!--Deleate location confermation script-->
+<form action="delete_location" id="delete_location_form" method="post" class="hidden">
+    <input type="hidden" name="location_id" value="{{ location_id }}">
+</form>
+
 <script>
     function confirm_delete() {
-        var confirmation = confirm("Are you sure you want to delete this location?");
+        var confirmation = confirm("Are you sure you want to delete this location? This action cannot be undone.");
         if (confirmation) {
             document.getElementById("delete_location_form").submit();
         }
     }
 </script>
-
-<div class="section">
-    <form action="delete_location" id="delete_location_form" method="post">
-        <button type="button" onclick="confirm_delete()">Delete Location</button>
-        <input type="hidden" name="location_id" value="{{ location_id }}">
-    </form>
-</div>
-
 {% endblock %}
