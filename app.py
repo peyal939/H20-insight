@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template,session, redirect, url_for
+from flask import Flask, request, render_template,session, redirect, url_for, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_session import Session
 
@@ -1105,7 +1105,31 @@ def admin():
         session["error_massage"] = "This page is only for admins."
         return redirect("/apology")
     
-    return render_template("admin.html")
+    # Get statistics for admin dashboard
+    cur = db.cursor(buffered=True)
+    
+    # Get user count
+    cur.execute("SELECT COUNT(*) FROM users")
+    user_count = cur.fetchone()[0]
+    
+    # Get location count
+    cur.execute("SELECT COUNT(*) FROM locations")
+    location_count = cur.fetchone()[0]
+    
+    # Get measurement count
+    cur.execute("SELECT COUNT(*) FROM data")
+    measurement_count = cur.fetchone()[0]
+    
+    cur.close()
+    
+    # Create stats dictionary
+    stats = {
+        "user_count": user_count,
+        "location_count": location_count,
+        "measurement_count": measurement_count
+    }
+    
+    return render_template("admin.html", stats=stats)
 
 
 @app.route("/admin_users")
@@ -1128,18 +1152,22 @@ def admin_user_edit():
         session["error_massage"] = "This page is only for admins."
         return redirect("/apology")
     
-    user_id = request.args.get("user_id")
+    user_id = request.args.get("user_id") if request.method == "GET" else request.form.get("user_id")
 
     if request.method == "GET":
-        
+        # Check if there's a success message in the session
+        success_message = None
+        if session.get("success_message"):
+            success_message = session.get("success_message")
+            session.pop("success_message")
+            
         cur = db.cursor(buffered=True)
         cur.execute("SELECT user_name, email, latitude, longitude, first_name, last_name, user_type FROM users WHERE user_id = %s", (int(user_id), ))
         user_data = cur.fetchall()[0]
 
-        return render_template("admin_user_edit.html", user_data=user_data, user_id=user_id)
+        return render_template("admin_user_edit.html", user_data=user_data, user_id=user_id, success_message=success_message)
     
     if request.method == "POST":
-        user_id = request.form.get("user_id")
         user_name = request.form.get("user_name")
         email = request.form.get("email")
         password = request.form.get("password")
@@ -1150,13 +1178,24 @@ def admin_user_edit():
         last_name = request.form.get("last_name")
         user_type = request.form.get("user_type")
 
-        if user_name:
-            # See if username taken
+        # Track if any changes were made
+        changes_made = False
+
+        # Get current user data first to compare what's being changed
+        cur = db.cursor(buffered=True)
+        cur.execute("SELECT user_name, email FROM users WHERE user_id = %s", (user_id, ))
+        current_user = cur.fetchone()
+        current_username = current_user[0]
+        current_email = current_user[1]
+        cur.close()
+
+        if user_name and user_name != current_username:
+            # Check if username is taken by another user
             cur = db.cursor(buffered=True)
-            cur.execute("SELECT * FROM users WHERE user_name = %s", (user_name, ))
+            cur.execute("SELECT * FROM users WHERE user_name = %s AND user_id != %s", (user_name, user_id))
             if cur.rowcount > 0:
                 cur.close()
-                session["error_massage"] = "Username allready exits"
+                session["error_massage"] = "Username already exists"
                 return redirect("/apology")
             else:
                 cur.close()
@@ -1164,14 +1203,15 @@ def admin_user_edit():
                 cur.execute("UPDATE users SET user_name = %s WHERE user_id = %s", (user_name, user_id))
                 db.commit()
                 cur.close()
+                changes_made = True
 
-        if email:
-            # See if email taken
+        if email and email != current_email:
+            # Check if email is taken by another user
             cur = db.cursor(buffered=True)
-            cur.execute("SELECT * FROM users WHERE email = %s", (email, ))
+            cur.execute("SELECT * FROM users WHERE email = %s AND user_id != %s", (email, user_id))
             if cur.rowcount > 0:
                 cur.close()
-                session["error_massage"] = "Email is allready in use"
+                session["error_massage"] = "Email is already in use"
                 return redirect("/apology")
             else:
                 cur.close()
@@ -1179,6 +1219,7 @@ def admin_user_edit():
                 cur.execute("UPDATE users SET email = %s WHERE user_id = %s", (email, user_id))
                 db.commit()
                 cur.close()
+                changes_made = True
 
         if password:
             if password != password_again:
@@ -1189,6 +1230,7 @@ def admin_user_edit():
             cur.execute("UPDATE users SET password_hash = %s WHERE user_id = %s", (generate_password_hash(password), user_id))
             db.commit()
             cur.close()
+            changes_made = True
 
         if latitude:
             if  not (-90 <= float(latitude) <= 90):
@@ -1199,6 +1241,7 @@ def admin_user_edit():
             cur.execute("UPDATE users SET latitude = %s WHERE user_id = %s", (Decimal(latitude), user_id))
             db.commit()
             cur.close()
+            changes_made = True
         
         if longitude:
             if not (-180 <= float(longitude) <= 180):
@@ -1209,6 +1252,7 @@ def admin_user_edit():
             cur.execute("UPDATE users SET longitude = %s WHERE user_id = %s", (Decimal(longitude), user_id))
             db.commit()
             cur.close()
+            changes_made = True
 
         if first_name:
             if len(first_name) > 255:
@@ -1219,6 +1263,7 @@ def admin_user_edit():
             cur.execute("UPDATE users SET first_name = %s WHERE user_id = %s", (first_name, user_id))
             db.commit()
             cur.close()
+            changes_made = True
 
         if last_name:
             if len(last_name) > 255:
@@ -1229,6 +1274,7 @@ def admin_user_edit():
             cur.execute("UPDATE users SET last_name = %s WHERE user_id = %s", (last_name, user_id))
             db.commit()
             cur.close()
+            changes_made = True
 
         if user_type:
             if user_type not in ["V", "R"]:
@@ -1239,8 +1285,19 @@ def admin_user_edit():
             cur.execute("UPDATE users SET user_type = %s WHERE user_id = %s", (user_type, user_id))
             db.commit()
             cur.close()
- 
-        return redirect(url_for("admin_user_edit", user_id=user_id))
+            changes_made = True
+        
+        # Set success message if changes were made
+        if changes_made:
+            # Use both session and flash message
+            session["success_message"] = "User updated successfully!"
+            flash("User updated successfully!")
+            
+            # Redirect to admin_users page instead of back to the edit page
+            return redirect("/admin_users")
+        else:
+            # If no changes were made, redirect back to edit page
+            return redirect(url_for("admin_user_edit", user_id=user_id))
 
 
 @app.route("/admin_locations")
