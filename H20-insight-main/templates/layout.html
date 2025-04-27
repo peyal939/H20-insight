@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#e0f7fa',
+                            100: '#b2ebf2',
+                            200: '#80deea',
+                            300: '#4dd0e1',
+                            400: '#26c6da',
+                            500: '#00bcd4',
+                            600: '#00acc1',
+                            700: '#0097a7',
+                            800: '#00838f',
+                            900: '#006064'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <title>H2OInsight : {% block title %}{% endblock %}</title>
+</head>
+
+<body class="font-sans bg-gray-50">
+    <!-- Header based on screenshot -->
+    <header class="bg-primary-500 text-white py-4 px-8">
+        <div class="flex justify-between items-center">
+            <a href="/" class="text-white no-underline">
+                <h1 class="text-4xl font-semibold">H2OInsight{% block header %}{% endblock %}</h1>
+            </a>
+
+            {% if session["user_id"] %}
+            <div class="flex space-x-2">
+                <a href="/profile" class="bg-white text-primary-500 hover:bg-gray-100 px-4 py-2 rounded text-sm font-medium">
+                    User Profile
+                </a>
+                <a href="/support" class="bg-white text-primary-500 hover:bg-gray-100 px-4 py-2 rounded text-sm font-medium">
+                    Support
+                </a>
+                <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium">
+                    Logout
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="py-6">
+        {% block main %}{% endblock %}
+    </main>
+    
+    <!-- JavaScript -->
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

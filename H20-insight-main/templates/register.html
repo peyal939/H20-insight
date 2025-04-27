@@ -1,0 +1,143 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block main %}
+<style>
+    /* Hide the header on register page */
+    header {
+        display: none !important;
+    }
+    
+    /* Remove padding from main */
+    main {
+        padding: 0 !important;
+    }
+    
+    /* Ensure body has the gradient background */
+    body {
+        background: linear-gradient(to bottom, var(--tw-gradient-stops));
+        --tw-gradient-from: #0097a7;
+        --tw-gradient-to: #006064;
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+</style>
+
+<div class="min-h-screen w-full flex items-center justify-center">
+    <!-- Register Card -->
+    <div class="w-full max-w-md px-6 py-8">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Water Logo/Icon -->
+            <div class="w-full bg-primary-500 py-6 px-8 flex justify-center">
+                <svg class="h-16 w-16 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C7.589 2 4 5.589 4 10c0 3.453 1.667 5.573 3.904 7.162A10.082 10.082 0 0 0 12 18.709a10.083 10.083 0 0 0 4.097-1.547C18.334 15.573 20 13.453 20 10c0-4.411-3.589-8-8-8zm0 14c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"></path>
+                    <path d="M12.866 6A4.997 4.997 0 0 0 9 8c0 2.757 2.243 5 5 5s5-2.243 5-5a5 5 0 0 0-1-3"></path>
+                </svg>
+            </div>
+
+            <div class="p-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Create Account</h2>
+                    <p class="text-gray-500 mt-2">Join H2OInsight community today</p>
+                </div>
+
+                <form action="/register" method="post" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                            <input class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition" 
+                                   id="first_name" 
+                                   name="first_name" 
+                                   type="text" 
+                                   required 
+                                   placeholder="First Name">
+                        </div>
+                        
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                            <input class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition" 
+                                   id="last_name" 
+                                   name="last_name" 
+                                   type="text" 
+                                   required 
+                                   placeholder="Last Name">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition" 
+                               id="email" 
+                               name="email" 
+                               type="email" 
+                               required 
+                               placeholder="Enter your email address">
+                    </div>
+
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition" 
+                               id="username" 
+                               name="username" 
+                               type="text" 
+                               required 
+                               placeholder="Choose a username">
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition" 
+                               id="password" 
+                               name="password" 
+                               type="password" 
+                               required 
+                               placeholder="Create a password">
+                    </div>
+
+                    <div>
+                        <label for="password_again" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                        <input class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition" 
+                               id="password_again" 
+                               name="password_again" 
+                               type="password" 
+                               required 
+                               placeholder="Confirm your password">
+                    </div>
+
+                    <div>
+                        <label for="user_type" class="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+                        <select class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition bg-white" 
+                                id="user_type" 
+                                name="user_type">
+                            <option value="V">Viewer</option>
+                            <option value="R">Researcher</option>
+                        </select>
+                    </div>
+
+                    <button class="w-full py-3 mt-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-semibold uppercase tracking-wide text-sm transition-colors duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" 
+                            type="submit">
+                        Register
+                    </button>
+                </form>
+
+                <div class="text-center mt-6">
+                    <p class="text-gray-500">Already have an account?</p>
+                    <a href="/login" class="block mt-2 py-2 rounded-lg border border-primary-600 text-primary-600 hover:bg-primary-50 font-semibold text-sm transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                        Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-white text-sm">
+            <p>H2OInsight © 2023 - Water Quality Monitoring</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
