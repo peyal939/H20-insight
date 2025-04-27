@@ -1,13 +1,16 @@
-from flask import Flask, request, render_template,session, redirect, url_for, flash
+from flask import Flask, request, render_template,session, redirect, url_for, flash, send_file
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_session import Session
 
 from decimal import Decimal
-
-import random
+import os
 
 # Database setup
 import mysql.connector 
+
+# Import the analyze_water_quality function from utils
+from utils.water_quality import analyze_water_quality
+from utils.pdf_generator import generate_water_quality_report
 
 db = mysql.connector.connect(
     host="localhost",
@@ -29,7 +32,43 @@ Session(app)
 def index():
     if request.method == "GET":
         if session.get("user_id"):      
-            return render_template("index.html")
+            # Get statistics for the dashboard
+            cur = db.cursor(buffered=True)
+            
+            # Count total locations
+            cur.execute("SELECT COUNT(*) FROM locations")
+            location_count = cur.fetchone()[0]
+            
+            # Count total measurements
+            cur.execute("SELECT COUNT(*) FROM data")
+            measurement_count = cur.fetchone()[0]
+            
+            # Count researchers
+            cur.execute("SELECT COUNT(*) FROM users WHERE user_type = 'R'")
+            researcher_count = cur.fetchone()[0]
+            
+            # Get recent locations
+            cur.execute("SELECT location_id, location_name, date_submitted FROM locations ORDER BY date_submitted DESC LIMIT 5")
+            recent_locations_raw = cur.fetchall()
+            
+            # Format recent locations for template
+            recent_locations = []
+            for loc in recent_locations_raw:
+                recent_locations.append({
+                    "location_id": loc[0],
+                    "location_name": loc[1],
+                    "date_submitted": loc[2]
+                })
+            
+            cur.close()
+            
+            return render_template(
+                "index.html", 
+                location_count=location_count,
+                measurement_count=measurement_count,
+                researcher_count=researcher_count,
+                recent_locations=recent_locations
+            )
         
         else:
             return redirect("/login")
@@ -218,16 +257,58 @@ def add_location():
             
         db.commit()
         cur.close()
-    # Get the id of the newly added location and
-    # Redirect to the newly added location
+    # Get the id of the newly added location
     cur = db.cursor(buffered=True)
     
     query = "SELECT * FROM locations WHERE user_id = %s ORDER BY date_submitted DESC"
     data = (int(session["user_id"]), )
     cur.execute(query, data)
     location_id = int(cur.fetchall()[0][0])
-
     cur.close()
+    
+    # Check if water parameters were provided
+    has_water_data = any([
+        request.form.get("ph"), request.form.get("bod"), 
+        request.form.get("cod"), request.form.get("temperature"),
+        request.form.get("ammonia"), request.form.get("arsenic"),
+        request.form.get("calcium"), request.form.get("ec"),
+        request.form.get("coliform"), request.form.get("hardness"),
+        request.form.get("lead_pb"), request.form.get("nitrogen"),
+        request.form.get("sodium"), request.form.get("sulfate"),
+        request.form.get("tss"), request.form.get("turbidity"),
+        request.form.get("tds")
+    ])
+    
+    # If water data is provided, save it to data table
+    if has_water_data:
+        user_id = session.get("user_id")
+        
+        ph = request.form.get("ph")
+        bod = request.form.get("bod")
+        cod = request.form.get("cod")
+        temperature = request.form.get("temperature")
+        ammonia = request.form.get("ammonia")
+        arsenic = request.form.get("arsenic")
+        calcium = request.form.get("calcium")
+        ec = request.form.get("ec")
+        coliform = request.form.get("coliform")
+        hardness = request.form.get("hardness")
+        lead_pb = request.form.get("lead_pb")
+        nitrogen = request.form.get("nitrogen")
+        sodium = request.form.get("sodium")
+        sulfate = request.form.get("sulfate")
+        tss = request.form.get("tss")
+        turbidity = request.form.get("turbidity")
+        tds = request.form.get("tds")
+
+        # Save the data to the database
+        cur = db.cursor(buffered=True)
+        query = "INSERT INTO data (location_id, user_id, ph, bod, cod, temperature, ammonia, arsenic, calcium, ec, coliform, hardness, lead_pb, nitrogen, sodium, sulfate, tss, turbidity, tds) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        data = (location_id, user_id, ph, bod, cod, temperature, ammonia, arsenic, calcium, ec, coliform, hardness, lead_pb, nitrogen, sodium, sulfate, tss, turbidity, tds)
+        cur.execute(query, data)
+        db.commit()
+        cur.close()
+
     return redirect(url_for("view", location_id=location_id))
 
 
@@ -1386,20 +1467,6 @@ def admin_location_edit():
         return redirect(url_for("admin_location_edit", location_id=location_id))
 
 
-@app.route("/random_location")
-def random_location():
-    if not session.get("user_id"):
-        redirect(url_for("login"))
-
-    cur = db.cursor(buffered=True)
-    cur.execute("SELECT location_id FROM locations")
-    locations = cur.fetchall()
-
-    random_location_id = (random.choice(locations))[0]
-
-    return redirect(url_for("view", location_id=random_location_id))
-
-
 # Delete
 @app.route("/delete_user", methods=["POST"])
 def delete_user():
@@ -1461,6 +1528,168 @@ def delete_data():
     else:
         return "INVALID REQUSET"
     
+
+@app.route("/analyze_water/<int:data_id>")
+def analyze_water(data_id):
+    if not session.get("user_id"):
+        return redirect("/login")
+    
+    cur = db.cursor(buffered=True, dictionary=True)
+    
+    # Get data parameters
+    query = "SELECT * FROM data WHERE data_id = %s"
+    data = (data_id, )
+    cur.execute(query, data)
+    
+    if cur.rowcount == 0:
+        session["error_massage"] = "Data not found"
+        return redirect("/apology")
+    
+    water_data = cur.fetchone()
+    
+    # Get location information
+    location_id = water_data["location_id"]
+    query = "SELECT * FROM locations WHERE location_id = %s"
+    data = (location_id, )
+    cur.execute(query, data)
+    location = cur.fetchone()
+    
+    cur.close()
+    
+    # Analyze water quality
+    analysis_result = analyze_water_quality(water_data)
+    
+    return render_template(
+        "analyze_water.html", 
+        water_data=water_data, 
+        location=location, 
+        analysis=analysis_result
+    )
+
+@app.route("/download_report/<int:data_id>")
+def download_report(data_id):
+    if not session.get("user_id"):
+        return redirect("/login")
+    
+    try:
+        cur = db.cursor(buffered=True, dictionary=True)
+        
+        # Get data parameters
+        query = "SELECT * FROM data WHERE data_id = %s"
+        data = (data_id, )
+        cur.execute(query, data)
+        
+        if cur.rowcount == 0:
+            session["error_massage"] = "Data not found"
+            return redirect("/apology")
+        
+        water_data = cur.fetchone()
+        
+        # Get location information
+        location_id = water_data["location_id"]
+        query = "SELECT * FROM locations WHERE location_id = %s"
+        data = (location_id, )
+        cur.execute(query, data)
+        location = cur.fetchone()
+        
+        cur.close()
+        
+        # Analyze water quality
+        analysis_result = analyze_water_quality(water_data)
+        
+        # Generate PDF report
+        pdf_path = generate_water_quality_report(location, water_data, analysis_result)
+        
+        if not pdf_path or not os.path.exists(pdf_path):
+            session["error_massage"] = "Error generating PDF report. Please try again later."
+            return redirect("/apology")
+        
+        # Create a filename for the download
+        safe_name = ''.join(c if c.isalnum() else '_' for c in location['location_name'])
+        filename = f"water_quality_report_{safe_name}_{data_id}.pdf"
+        
+        # Send the file to the user
+        try:
+            return send_file(
+                pdf_path,
+                as_attachment=True,
+                download_name=filename,
+                mimetype='application/pdf'
+            )
+        except Exception as e:
+            print(f"Error sending file: {e}")
+            session["error_massage"] = "Error sending PDF report. Please try again later."
+            return redirect("/apology")
+        finally:
+            # Clean up the temporary file after sending
+            if os.path.exists(pdf_path):
+                try:
+                    os.unlink(pdf_path)
+                except:
+                    pass
+    
+    except Exception as e:
+        print(f"Error in download_report: {e}")
+        session["error_massage"] = "An error occurred while generating the report."
+        return redirect("/apology")
+
+@app.route("/gauge_visualization/<int:data_id>")
+def gauge_visualization(data_id):
+    if not session.get("user_id"):
+        return redirect("/login")
+    
+    cur = db.cursor(buffered=True, dictionary=True)
+    
+    # Get data parameters
+    query = "SELECT * FROM data WHERE data_id = %s"
+    data = (data_id, )
+    cur.execute(query, data)
+    
+    if cur.rowcount == 0:
+        session["error_massage"] = "Data not found"
+        return redirect("/apology")
+    
+    water_data = cur.fetchone()
+    
+    # Get location information
+    location_id = water_data["location_id"]
+    query = "SELECT * FROM locations WHERE location_id = %s"
+    data = (location_id, )
+    cur.execute(query, data)
+    location = cur.fetchone()
+    
+    cur.close()
+    
+    # Define acceptable ranges for parameters
+    # These values should be aligned with your water quality analysis function
+    acceptable_ranges = {
+        "ph": {"min": 6.5, "max": 8.5, "label": "pH"},
+        "bod": {"min": 0, "max": 6, "label": "BOD (mg/l)"},
+        "cod": {"min": 0, "max": 10, "label": "COD (mg/l)"},
+        "temperature": {"min": 20, "max": 30, "label": "Temperature (°C)"},
+        "turbidity": {"min": 0, "max": 5, "label": "Turbidity (NTU)"},
+        "tds": {"min": 0, "max": 500, "label": "TDS (mg/l)"},
+        "ec": {"min": 0, "max": 800, "label": "EC (μS/cm)"}
+        # Add other parameters as needed
+    }
+    
+    # Pass only parameters that have values in the water_data
+    gauge_data = {}
+    for param, range_info in acceptable_ranges.items():
+        if water_data[param] is not None:
+            gauge_data[param] = {
+                "value": float(water_data[param]),
+                "min": range_info["min"],
+                "max": range_info["max"],
+                "label": range_info["label"]
+            }
+    
+    return render_template(
+        "gauge_charts.html", 
+        water_data=water_data, 
+        location=location, 
+        gauge_data=gauge_data
+    )
 
 # Add this at the end of the file
 if __name__ == "__main__":

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Water Quality Report</title>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>Water Quality Report: {{ location.location_name }}</h1>
+        <p>Report generated on: {{ report_date }}</p>
+        <p>Sample date: {{ sample_date }}</p>
+    </div>
+    
+    <!-- Summary -->
+    <div class="summary">
+        <h2>Water Quality Analysis Summary</h2>
+        <p>{{ analysis.summary }}</p>
+    </div>
+    
+    <!-- Safety Status -->
+    <h2>Safety Assessment</h2>
+    <table>
+        <tr>
+            <th>Assessment Type</th>
+            <th>Status</th>
+            <th>Details</th>
+        </tr>
+        <tr>
+            <td>Human Safety</td>
+            <td class="{% if analysis.human_safe %}safe{% else %}concern{% endif %}">
+                {% if analysis.human_safe %}SAFE{% else %}CONCERN{% endif %}
+            </td>
+            <td>
+                {% if analysis.human_concerns %}
+                    Parameters of concern: {{ analysis.human_concerns|join(', ') }}
+                {% else %}
+                    All parameters within acceptable ranges for human use
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>Aquatic Life Safety</td>
+            <td class="{% if analysis.fish_safe %}safe{% else %}concern{% endif %}">
+                {% if analysis.fish_safe %}SAFE{% else %}CONCERN{% endif %}
+            </td>
+            <td>
+                {% if analysis.fish_concerns %}
+                    Parameters of concern: {{ analysis.fish_concerns|join(', ') }}
+                {% else %}
+                    All parameters within acceptable ranges for aquatic life
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    
+    <!-- Recommendations -->
+    {% if analysis.recommendations %}
+    <div class="recommendations">
+        <h2>Recommendations</h2>
+        <ul>
+            {% for recommendation in analysis.recommendations %}
+                <li>{{ recommendation }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    <!-- Water Parameters -->
+    <h2>Water Quality Parameters</h2>
+    <table>
+        <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+            <th>Unit</th>
+            <th>Human Safety</th>
+            <th>Aquatic Safety</th>
+        </tr>
+        {% for param_name, param_analysis in analysis.parameter_analysis.items() %}
+            {% if water_data[param_name] %}
+                <tr>
+                    <td>{{ param_name }}</td>
+                    <td>{{ water_data[param_name] }}</td>
+                    <td>
+                        {% if param_name == 'ph' %}
+                            pH units
+                        {% elif param_name == 'temperature' %}
+                            °C
+                        {% elif param_name == 'ec' %}
+                            μS/cm
+                        {% elif param_name == 'coliform' %}
+                            N/100ml
+                        {% elif param_name == 'turbidity' %}
+                            NTU
+                        {% else %}
+                            mg/l
+                        {% endif %}
+                    </td>
+                    <td class="{% if param_analysis.human_safe == True %}safe{% elif param_analysis.human_safe == False %}concern{% endif %}">
+                        {% if param_analysis.human_safe == True %}
+                            Safe
+                        {% elif param_analysis.human_safe == False %}
+                            Concern
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td class="{% if param_analysis.fish_safe == True %}safe{% elif param_analysis.fish_safe == False %}concern{% endif %}">
+                        {% if param_analysis.fish_safe == True %}
+                            Safe
+                        {% elif param_analysis.fish_safe == False %}
+                            Concern
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+    
+    <!-- Parameter Descriptions -->
+    <h2>Parameter Descriptions</h2>
+    <table>
+        <tr>
+            <th>Parameter</th>
+            <th>Description</th>
+        </tr>
+        {% for param_name, param_analysis in analysis.parameter_analysis.items() %}
+            {% if water_data[param_name] %}
+                <tr>
+                    <td>{{ param_name }}</td>
+                    <td>{{ param_analysis.description }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+    
+    <!-- Location Information -->
+    <h2>Location Information</h2>
+    <table>
+        <tr>
+            <th>Property</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>Location Name</td>
+            <td>{{ location.location_name }}</td>
+        </tr>
+        {% if location.description %}
+        <tr>
+            <td>Description</td>
+            <td>{{ location.description }}</td>
+        </tr>
+        {% endif %}
+        {% if location.latitude and location.longitude %}
+        <tr>
+            <td>Coordinates</td>
+            <td>Lat: {{ location.latitude }}, Long: {{ location.longitude }}</td>
+        </tr>
+        {% endif %}
+    </table>
+    
+    <div class="footer">
+        <p>Generated by H2O Insight Water Quality Monitoring System</p>
+        <p>This report is for informational purposes only and does not replace professional water quality assessment.</p>
+    </div>
+</body>
+</html> 
