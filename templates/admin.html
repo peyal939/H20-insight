@@ -18,7 +18,7 @@
                 </div>
                 <div class="p-6">
                     <p class="text-gray-600 mb-4">Manage user accounts, permissions and access controls</p>
-                    <a href="/admin_users" class="block text-center bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-2 px-4 rounded-md transition duration-200">
+                    <a href="{{ url_for('admin.admin_users') }}" class="block text-center bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-2 px-4 rounded-md transition duration-200">
                         Manage Users
                     </a>
                 </div>
@@ -31,7 +31,7 @@
                 </div>
                 <div class="p-6">
                     <p class="text-gray-600 mb-4">Manage water measurement locations and related data</p>
-                    <a href="/admin_locations" class="block text-center bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-2 px-4 rounded-md transition duration-200">
+                    <a href="{{ url_for('admin.admin_locations') }}" class="block text-center bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-2 px-4 rounded-md transition duration-200">
                         Manage Locations
                     </a>
                 </div>

@@ -15,7 +15,7 @@
             <h2 class="text-xl font-semibold text-white">Edit Location Details</h2>
         </div>
         
-        <form action="/admin_location_edit" method="post" class="p-6">
+        <form action="{{ url_for('admin.admin_location_edit') }}" method="post" class="p-6">
             <input type="hidden" name="location_id" value="{{ location_id }}">
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -63,7 +63,7 @@
     </div>
     
     <div class="mt-6 text-center">
-        <a href="/admin_location" class="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center">
+        <a href="{{ url_for('admin.admin_locations') }}" class="text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
             </svg>
@@ -72,7 +72,7 @@
     </div>
 </div>
 
-<form action="delete_location" id="delete_location_form" method="post" class="hidden">
+<form action="{{ url_for('admin.delete_location') }}" id="delete_location_form" method="post" class="hidden">
     <input type="hidden" name="location_id" value="{{ location_id }}">
 </form>
 

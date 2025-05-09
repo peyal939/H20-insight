@@ -63,12 +63,12 @@
         <div class="bg-white rounded-lg shadow-md overflow-hidden border border-blue-100">
             <div class="flex justify-between items-center p-4 border-b border-blue-100">
                 <h2 class="text-xl font-semibold text-blue-800">Edit User</h2>
-                <a href="/admin_users" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-2 px-4 rounded-md transition duration-200">
+                <a href="{{ url_for('admin.admin_users') }}" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-2 px-4 rounded-md transition duration-200">
                     Back to Users
                 </a>
             </div>
             
-            <form action="/admin_user_edit" method="post" class="p-6">
+            <form action="{{ url_for('admin.admin_user_edit') }}" method="post" class="p-6">
                 <input type="hidden" name="user_id" value="{{ user_id }}">
                 <div class="grid grid-cols-1 gap-6 mb-6">
                     <div>
@@ -127,7 +127,7 @@
                         Update User
                     </button>
                     
-                    <form action="/delete_user" method="post" class="inline">
+                    <form action="{{ url_for('admin.delete_user') }}" method="post" class="inline">
                         <input type="hidden" name="user_id" value="{{ user_id }}">
                         <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition duration-200" onclick="return confirm('Are you sure you want to delete this user?')">
                             Delete User
