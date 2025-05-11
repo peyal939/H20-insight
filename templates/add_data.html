@@ -19,118 +19,345 @@
         
         <!-- Form Content -->
         <div class="p-6">
-            <form action="/add_data" method="post">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-1">
-                        <label for="pH" class="block text-sm font-medium text-gray-700">pH:</label>
-                        <input type="number" step="any" id="pH" name="ph" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+            <form action="/add_data" method="post" id="dataEntryForm">
+                <div class="mb-6">
+                    <div class="p-4 bg-primary-50 rounded-lg border border-primary-100">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-primary-700">
+                                    Enter the water quality parameters below. All fields are required for accurate analysis.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parameter Groups -->
+                <div class="space-y-8">
+                    <!-- Basic Parameters Group -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Parameters</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label for="pH" class="text-sm font-medium text-gray-700 flex items-center">
+                                    pH
+                                    <span class="ml-1 cursor-help text-gray-400 hover:text-gray-600 group relative">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                            Typical range: 6.5-8.5
+                                        </div>
+                                    </span>
+                                </label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="pH" name="ph" required min="0" max="14"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">units</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">Range: 0-14</div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="temperature" class="text-sm font-medium text-gray-700">Temperature</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="temperature" name="temperature" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">°C</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="EC" class="text-sm font-medium text-gray-700">Electrical Conductivity</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="EC" name="ec" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">μS/cm</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="space-y-1">
-                        <label for="BOD" class="block text-sm font-medium text-gray-700">BOD:</label>
-                        <input type="number" step="any" id="BOD" name="bod" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    <!-- Oxygen Demand Group -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Oxygen Demand & Solids</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label for="BOD" class="text-sm font-medium text-gray-700 flex items-center">
+                                    Biochemical Oxygen Demand
+                                    <span class="ml-1 cursor-help text-gray-400 hover:text-gray-600 group relative">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                            Biological Oxygen Demand
+                                        </div>
+                                    </span>
+                                </label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="BOD" name="bod" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="COD" class="text-sm font-medium text-gray-700 flex items-center">
+                                    Chemical Oxygen Demand
+                                    <span class="ml-1 cursor-help text-gray-400 hover:text-gray-600 group relative">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                            Chemical Oxygen Demand
+                                        </div>
+                                    </span>
+                                </label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="COD" name="cod" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="TSS" class="text-sm font-medium text-gray-700">Total Suspended Solids</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="TSS" name="tss" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="turbidity" class="text-sm font-medium text-gray-700">Turbidity</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="turbidity" name="turbidity" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">NTU</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="tds" class="text-sm font-medium text-gray-700">Total Dissolved Solids</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="tds" name="tds" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="space-y-1">
-                        <label for="COD" class="block text-sm font-medium text-gray-700">COD:</label>
-                        <input type="number" step="any" id="COD" name="cod" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    <!-- Nutrients & Minerals Group -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Nutrients & Minerals</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label for="ammonia" class="text-sm font-medium text-gray-700">Ammonia</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="ammonia" name="ammonia" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="nitrogen" class="text-sm font-medium text-gray-700">Nitrogen (Nitrate)</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="nitrogen" name="nitrogen" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="calcium" class="text-sm font-medium text-gray-700">Calcium</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="calcium" name="calcium" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="sodium" class="text-sm font-medium text-gray-700">Sodium</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="sodium" name="sodium" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="sulfate" class="text-sm font-medium text-gray-700">Sulphate</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="sulfate" name="sulfate" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="hardness" class="text-sm font-medium text-gray-700">Hardness</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="hardness" name="hardness" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="space-y-1">
-                        <label for="temperature" class="block text-sm font-medium text-gray-700">Temperature:</label>
-                        <input type="number" step="any" id="temperature" name="temperature" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="ammonia" class="block text-sm font-medium text-gray-700">Ammonia (mg/ml):</label>
-                        <input type="number" step="any" id="ammonia" name="ammonia" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="arsenic" class="block text-sm font-medium text-gray-700">Arsenic (mg/ml):</label>
-                        <input type="number" step="any" id="arsenic" name="arsenic" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="calcium" class="block text-sm font-medium text-gray-700">Calcium (mg/ml):</label>
-                        <input type="number" step="any" id="calcium" name="calcium" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="EC" class="block text-sm font-medium text-gray-700">EC (µS/cm):</label>
-                        <input type="number" step="any" id="EC" name="ec" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="coliform" class="block text-sm font-medium text-gray-700">Coliform (Faecal) (N/100ml):</label>
-                        <input type="number" step="any" id="coliform" name="coliform" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="hardness" class="block text-sm font-medium text-gray-700">Hardness (mg/ml):</label>
-                        <input type="number" step="any" id="hardness" name="hardness" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="lead" class="block text-sm font-medium text-gray-700">Lead (mg/l):</label>
-                        <input type="number" step="any" id="lead" name="lead_pb" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="nitrogen" class="block text-sm font-medium text-gray-700">Nitrogen (Nitrate) (mg/l):</label>
-                        <input type="number" step="any" id="nitrogen" name="nitrogen" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="sodium" class="block text-sm font-medium text-gray-700">Sodium (mg/l):</label>
-                        <input type="number" step="any" id="sodium" name="sodium" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="sulfate" class="block text-sm font-medium text-gray-700">Sulphate (mg/l):</label>
-                        <input type="number" step="any" id="sulfate" name="sulfate" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="TSS" class="block text-sm font-medium text-gray-700">TSS (mg/l):</label>
-                        <input type="number" step="any" id="TSS" name="tss" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="turbidity" class="block text-sm font-medium text-gray-700">Turbidity (NTU):</label>
-                        <input type="number" step="any" id="turbidity" name="turbidity" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
-                    </div>
-                    
-                    <div class="space-y-1">
-                        <label for="tds" class="block text-sm font-medium text-gray-700">TDS:</label>
-                        <input type="number" step="any" id="tds" name="tds" required
-                               class="w-full h-10 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                    <!-- Heavy Metals & Microbiology Group -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Heavy Metals & Microbiology</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label for="arsenic" class="text-sm font-medium text-gray-700">Arsenic</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="arsenic" name="arsenic" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="lead" class="text-sm font-medium text-gray-700">Lead</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="lead" name="lead_pb" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">mg/l</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label for="coliform" class="text-sm font-medium text-gray-700">Fecal Coliform</label>
+                                <div class="relative">
+                                    <input type="number" step="any" id="coliform" name="coliform" required min="0"
+                                           class="block w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
+                                    <div class="unit-label absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">N/100ml</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
+                <div class="flex items-center mt-6 mb-6">
+                    <input id="validate-inputs" type="checkbox" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                    <label for="validate-inputs" class="ml-2 text-sm text-gray-700">
+                        I confirm all values are accurate
+                    </label>
+                </div>
+                
                 <div class="mt-8">
-                    <button type="submit" class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                    <button type="submit" class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
                         Submit Data
                     </button>
                 </div>
             </form>
         </div>
-        </div>
     </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('dataEntryForm');
+        const inputs = form.querySelectorAll('input[type="number"]');
+        
+        function updateUnitLabelVisibility(input) {
+            const unitLabel = input.parentElement.querySelector('.unit-label');
+            if (!unitLabel) return;
+            
+            if (input.value) {
+                unitLabel.style.display = 'none';
+            } else {
+                unitLabel.style.display = 'flex';
+            }
+        }
+        
+        // Add visual feedback when user interacts with fields
+        inputs.forEach(input => {
+            // Check and set initial state
+            updateUnitLabelVisibility(input);
+            
+            // Hide/show unit label when typing
+            input.addEventListener('input', function() {
+                updateUnitLabelVisibility(this);
+            });
+            
+            // Add validation styling on blur
+            input.addEventListener('blur', function() {
+                if (this.value) {
+                    this.classList.add('bg-green-50', 'border-green-300');
+                    this.classList.remove('border-red-300', 'bg-red-50');
+                    
+                    // Hide tooltip for filled inputs
+                    const label = this.closest('.space-y-2').querySelector('.group');
+                    if (label) {
+                        label.classList.add('pointer-events-none', 'opacity-30');
+                    }
+                } else if (this.required) {
+                    this.classList.add('border-red-300', 'bg-red-50');
+                    this.classList.remove('bg-green-50', 'border-green-300');
+                    
+                    // Show tooltip for empty required fields
+                    const label = this.closest('.space-y-2').querySelector('.group');
+                    if (label) {
+                        label.classList.remove('pointer-events-none', 'opacity-30');
+                    }
+                }
+            });
+            
+            // Reset styling on focus
+            input.addEventListener('focus', function() {
+                this.classList.remove('border-red-300', 'bg-red-50', 'bg-green-50', 'border-green-300');
+            });
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}

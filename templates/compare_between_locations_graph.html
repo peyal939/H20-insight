@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Location Comparison Graph</title>
+    <title>Water Quality Comparison - H2OInsight</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -25,7 +25,7 @@
                         }
                     },
                     fontFamily: {
-                        sans: ['Montserrat', 'sans-serif']
+                        sans: ['Inter', 'sans-serif']
                     }
                 }
             }
@@ -33,23 +33,25 @@
     </script>
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Include Chart.js library -->
+    <!-- Include Chart.js and plugins -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.0.0"></script>
 </head>
-<body class="font-sans bg-gray-50">
+<body class="font-sans bg-gray-100">
     <!-- Header -->
-    <header class="bg-primary-500 text-white py-4 px-8">
+    <header class="bg-primary-600 text-white py-4 px-8 shadow-md">
         <div class="flex justify-between items-center">
             <a href="/" class="text-white no-underline">
-                <h1 class="text-3xl font-semibold">H2OInsight</h1>
+                <h1 class="text-3xl font-bold">H2OInsight</h1>
             </a>
             <div>
-                <a href="/compare_between_locations" class="bg-white text-primary-500 hover:bg-gray-100 px-4 py-2 rounded text-sm font-medium mr-2">
+                <a href="/compare_between_locations" class="bg-white text-primary-600 hover:bg-gray-100 px-4 py-2 rounded-md text-sm font-medium mr-2 transition duration-200">
                     Back to Comparison
                 </a>
-                <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-medium">
+                <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200">
                     Logout
                 </a>
             </div>
@@ -57,165 +59,619 @@
     </header>
 
     <main class="container mx-auto px-4 py-8">
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Comparison between <span class="text-primary-600">{{ location_data.location_name_1 }}</span> and <span class="text-primary-600">{{ location_data.location_name_2 }}</span></h1>
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Comparison between <span class="text-primary-600">{{ location_data.location_name_1 }}</span> and <span class="text-primary-600">{{ location_data.location_name_2 }}</span></h1>
+            <p class="text-center text-gray-500 mb-6">Analysis of key water quality parameters</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Dashboard Summary -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-700 mb-3">Water Quality Overview</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="summaryCards">
+                    <!-- Summary cards will be inserted here by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="flex flex-wrap justify-center items-center gap-4 mb-6">
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-primary-500 rounded mr-2"></div>
+                    <span class="text-sm text-gray-700">{{ location_data.location_name_1 }}</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-indigo-500 rounded mr-2"></div>
+                    <span class="text-sm text-gray-700">{{ location_data.location_name_2 }}</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-green-100 bg-opacity-50 border border-green-200 rounded mr-2"></div>
+                    <span class="text-sm text-gray-700">Standard Range</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-red-100 bg-opacity-50 border border-red-200 rounded mr-2"></div>
+                    <span class="text-sm text-gray-700">Warning Range</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- pH Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">pH</h2>
-                    <canvas id="phChart" width="400" height="200"></canvas>
+                <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">pH</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: 6.5-8.5</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="phChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- BOD Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">BOD (mg/ml)</h2>
-                    <canvas id="bodChart" width="400" height="200"></canvas>
+                <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">BOD (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <3.0</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="bodChart"></canvas>
+                    </div>
                 </div>
                 
                 <!-- COD Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">COD (mg/ml)</h2>
-                    <canvas id="codChart" width="400" height="200"></canvas>
+                <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">COD (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <10.0</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="codChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- Temperature Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Temperature (ᵒC)</h2>
-                    <canvas id="temperatureChart" width="400" height="200"></canvas>
+                <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Temperature (°C)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: 20-30°C</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="temperatureChart"></canvas>
+                    </div>
                 </div>
 
-                <!-- Ammonia Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Ammonia (mg/ml)</h2>
-                    <canvas id="ammoniaChart" width="400" height="200"></canvas>
-                </div>
-                
-                <!-- Arsenic Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Arsenic (mg/ml)</h2>
-                    <canvas id="arsenicChart" width="400" height="200"></canvas>
-                </div>
-
-                <!-- Calcium Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Calcium (mg/ml)</h2>
-                    <canvas id="calciumChart" width="400" height="200"></canvas>
-                </div>
-                
-                <!-- EC Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">EC (µS/cm)</h2>
-                    <canvas id="ecChart" width="400" height="200"></canvas>
+                <!-- Ammonia Chart (Conditional) -->
+                <div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Ammonia (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <0.5</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="ammoniaChart"></canvas>
+                    </div>
                 </div>
 
-                <!-- Coliform Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Coliform (Faecal) (N/100ml)</h2>
-                    <canvas id="coliformChart" width="400" height="200"></canvas>
-                </div>
-                
-                <!-- Hardness Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Hardness (mg/ml)</h2>
-                    <canvas id="hardnessChart" width="400" height="200"></canvas>
-                </div>
-
-                <!-- Lead Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Lead (mg/ml)</h2>
-                    <canvas id="lead_pbChart" width="400" height="200"></canvas>
-                </div>
-                
-                <!-- Nitrogen Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Nitrogen (mg/ml)</h2>
-                    <canvas id="nitrogenChart" width="400" height="200"></canvas>
+                <!-- Arsenic Chart (Conditional) -->
+                <div id="arsenicChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Arsenic (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <0.01</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="arsenicChart"></canvas>
+                    </div>
                 </div>
 
-                <!-- Sodium Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Sodium (mg/ml)</h2>
-                    <canvas id="sodiumChart" width="400" height="200"></canvas>
-                </div>
-                
-                <!-- Sulfate Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Sulfate (mg/ml)</h2>
-                    <canvas id="sulfateChart" width="400" height="200"></canvas>
-                </div>
-
-                <!-- TSS Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">TSS (mg/ml)</h2>
-                    <canvas id="tssChart" width="400" height="200"></canvas>
-                </div>
-                
-                <!-- Turbidity Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">Turbidity (NTU)</h2>
-                    <canvas id="turbidityChart" width="400" height="200"></canvas>
+                <!-- Calcium Chart (Conditional) -->
+                <div id="calciumChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Calcium (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <200</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="calciumChart"></canvas>
+                    </div>
                 </div>
 
-                <!-- TDS Chart -->
-                <div class="bg-white rounded-lg shadow p-4">
-                    <h2 class="text-lg font-semibold text-center text-gray-700 mb-4">TDS (mg/ml)</h2>
-                    <canvas id="tdsChart" width="400" height="200"></canvas>
+                <!-- EC Chart (Conditional) -->
+                <div id="ecChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">EC (µS/cm)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <1500</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="ecChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Coliform Chart (Conditional) -->
+                <div id="coliformChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Coliform (N/100ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: 0</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="coliformChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Hardness Chart (Conditional) -->
+                <div id="hardnessChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Hardness (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <300</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="hardnessChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Lead Chart (Conditional) -->
+                <div id="lead_pbChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Lead (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <0.01</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="lead_pbChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Nitrogen Chart (Conditional) -->
+                <div id="nitrogenChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Nitrogen (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <10</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="nitrogenChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Sodium Chart (Conditional) -->
+                <div id="sodiumChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Sodium (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <200</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="sodiumChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Sulfate Chart (Conditional) -->
+                <div id="sulfateChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Sulfate (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <250</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="sulfateChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- TSS Chart (Conditional) -->
+                <div id="tssChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">TSS (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <50</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="tssChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Turbidity Chart (Conditional) -->
+                <div id="turbidityChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">Turbidity (NTU)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <5</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="turbidityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- TDS Chart (Conditional) -->
+                <div id="tdsChartContainer" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow duration-200 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-sm font-semibold text-gray-700">TDS (mg/ml)</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">Standard: <1000</span>
+                        </div>
+                    </div>
+                    <div class="h-[180px]">
+                        <canvas id="tdsChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
+        Chart.register(ChartDataLabels);
+        
         var location1Data = {{ location_1_data | tojson | safe }};
         var location2Data = {{ location_2_data | tojson | safe }};
         var location_name = {{ location_data | tojson | safe }};
 
-        function createBarChart(canvasId, label, data1, data2) {
-            var ctx = document.getElementById(canvasId).getContext('2d');
+        // Define standard ranges for parameters
+        const standardRanges = {
+            ph: { min: 6.5, max: 8.5, unit: "", name: "pH" },
+            bod: { min: 0, max: 3, unit: "mg/ml", name: "BOD" },
+            cod: { min: 0, max: 10, unit: "mg/ml", name: "COD" },
+            temperature: { min: 20, max: 30, unit: "°C", name: "Temperature" },
+            ammonia: { min: 0, max: 0.5, unit: "mg/ml", name: "Ammonia" },
+            arsenic: { min: 0, max: 0.01, unit: "mg/ml", name: "Arsenic" },
+            calcium: { min: 0, max: 200, unit: "mg/ml", name: "Calcium" },
+            ec: { min: 0, max: 1500, unit: "µS/cm", name: "EC" },
+            coliform: { min: 0, max: 0, unit: "N/100ml", name: "Coliform" },
+            hardness: { min: 0, max: 300, unit: "mg/ml", name: "Hardness" },
+            lead_pb: { min: 0, max: 0.01, unit: "mg/ml", name: "Lead" },
+            nitrogen: { min: 0, max: 10, unit: "mg/ml", name: "Nitrogen" },
+            sodium: { min: 0, max: 200, unit: "mg/ml", name: "Sodium" },
+            sulfate: { min: 0, max: 250, unit: "mg/ml", name: "Sulfate" },
+            tss: { min: 0, max: 50, unit: "mg/ml", name: "TSS" },
+            turbidity: { min: 0, max: 5, unit: "NTU", name: "Turbidity" },
+            tds: { min: 0, max: 1000, unit: "mg/ml", name: "TDS" }
+        };
+
+        // Create summary cards for key parameters
+        function createSummaryCards() {
+            const container = document.getElementById('summaryCards');
+            const keyParameters = ['ph', 'bod', 'cod', 'tds'];
+            
+            keyParameters.forEach(param => {
+                if (location1Data[param] !== undefined && location2Data[param] !== undefined) {
+                    const standard = standardRanges[param];
+                    const value1 = location1Data[param];
+                    const value2 = location2Data[param];
+                    
+                    // Determine status based on standard ranges
+                    const status1 = getStatusClass(value1, standard.min, standard.max);
+                    const status2 = getStatusClass(value2, standard.min, standard.max);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-4 rounded-lg shadow border border-gray-200';
+                    card.innerHTML = `
+                        <h3 class="text-sm font-medium text-gray-500">${standard.name}</h3>
+                        <div class="flex justify-between mt-2">
+                            <div>
+                                <p class="text-lg font-bold ${status1.textColor}">${value1} ${standard.unit}</p>
+                                <p class="text-xs text-gray-500">${location_name.location_name_1}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold ${status2.textColor}">${value2} ${standard.unit}</p>
+                                <p class="text-xs text-gray-500">${location_name.location_name_2}</p>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-xs">
+                            <span class="text-gray-500">Standard: ${standard.min}-${standard.max} ${standard.unit}</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+        }
+        
+        function getStatusClass(value, min, max) {
+            if (value < min || value > max) {
+                return { textColor: 'text-red-600', bgColor: 'bg-red-100' };
+            } else {
+                return { textColor: 'text-green-600', bgColor: 'bg-green-100' };
+            }
+        }
+
+        function createEnhancedBarChart(canvasId, param, data1, data2) {
+            const standard = standardRanges[param];
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            // Calculate Y axis min/max values dynamically based on parameter and data
+            const dataMin = Math.min(data1, data2);
+            const dataMax = Math.max(data1, data2);
+            const standardMin = standard.min;
+            const standardMax = standard.max;
+            
+            // Advanced scaling logic based on parameter and data ranges
+            let yMin = 0; // Default minimum
+            let yMax;
+            
+            // 1. Parameter-specific scaling
+            if (param === 'ph') {
+                // pH has a natural scale from 0-14, but we can focus on the relevant range
+                yMin = Math.max(0, Math.floor(Math.min(dataMin, standardMin) - 0.5));
+                yMax = Math.min(14, Math.ceil(Math.max(dataMax, standardMax) + 0.5));
+            } else if (['coliform', 'lead_pb', 'arsenic'].includes(param)) {
+                // Parameters where very small values are significant, and zero is meaningful
+                yMin = 0;
+                if (dataMax === 0 && standardMax === 0) {
+                    yMax = 0.1; // Show a small scale when both are zero
+                } else if (dataMax <= standardMax) {
+                    yMax = standardMax * 1.5; // Focus on the standard range
+                } else {
+                    yMax = dataMax * 1.25; // Show the data with 25% margin
+                }
+            } else if (dataMin > 0 && dataMax / dataMin > 10) {
+                // Large range between min and max - consider logarithmic scale or focus on range
+                yMin = 0;
+                yMax = dataMax * 1.1;
+            } else {
+                // For most parameters
+                // If data is within standard range, focus on standard range
+                if (dataMax <= standardMax * 1.2) {
+                    yMin = 0;
+                    yMax = standardMax * 1.3; // Show standard range plus some margin
+                } else {
+                    // Data exceeds standard range, focus on data
+                    yMin = 0;
+                    yMax = dataMax * 1.15; // 15% margin above max data
+                }
+                
+                // If the difference between data points is very small but significant
+                if (dataMax > 0 && Math.abs(data1 - data2) / dataMax < 0.1) {
+                    // Zoom in more to show the difference if values are close
+                    const rangeMidpoint = (data1 + data2) / 2;
+                    const halfRange = Math.max(Math.abs(data1 - data2) * 3, rangeMidpoint * 0.2);
+                    
+                    // Only adjust if standard range is also reasonably close
+                    if (standardMax < dataMax * 1.5) {
+                        yMin = Math.max(0, rangeMidpoint - halfRange);
+                        yMax = rangeMidpoint + halfRange;
+                    }
+                }
+            }
+            
+            // Make sure we have a reasonable scale (avoid division by zero issues)
+            if (yMax <= yMin) {
+                yMax = yMin + 1;
+            }
+            
+            // Round yMax to a nice number for cleaner scale
+            yMax = ceilToNiceNumber(yMax);
+            
             return new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: [location_name.location_name_1, location_name.location_name_2],
                     datasets: [{
-                        label: label,
-                        backgroundColor: ['rgba(0, 188, 212, 0.7)', 'rgba(103, 58, 183, 0.7)'],
-                        data: [data1, data2]
+                        label: standard.name,
+                        backgroundColor: [
+                            data1 >= standard.min && data1 <= standard.max ? 'rgba(0, 188, 212, 0.8)' : 'rgba(239, 68, 68, 0.8)',
+                            data2 >= standard.min && data2 <= standard.max ? 'rgba(79, 70, 229, 0.8)' : 'rgba(239, 68, 68, 0.8)'
+                        ],
+                        borderColor: [
+                            data1 >= standard.min && data1 <= standard.max ? 'rgb(0, 156, 176)' : 'rgb(220, 38, 38)',
+                            data2 >= standard.min && data2 <= standard.max ? 'rgb(67, 56, 202)' : 'rgb(220, 38, 38)'
+                        ],
+                        borderWidth: 1,
+                        data: [data1, data2],
+                        borderRadius: 4,
+                        maxBarThickness: 40
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    layout: {
+                        padding: {
+                            top: 15
+                        }
+                    },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: yMin === 0, // Only start at zero if appropriate
+                            min: yMin,
+                            max: yMax,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                },
+                                // Limit to reasonable tick count
+                                count: 5,
+                                // Format numbers to avoid excessive decimals
+                                callback: function(value) {
+                                    if (value % 1 === 0) {
+                                        return value; // Integer values
+                                    }
+                                    // For decimal values, limit to 1 decimal place
+                                    return Number(value).toFixed(1);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
                         }
                     },
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    let status = value >= standard.min && value <= standard.max ? 
+                                        'Within standard range' : 'Outside standard range';
+                                    return [
+                                        `${standard.name}: ${value} ${standard.unit}`,
+                                        `Status: ${status}`,
+                                        `Standard range: ${standard.min}-${standard.max} ${standard.unit}`
+                                    ];
+                                }
+                            }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: function(value) {
+                                // Format data labels - integers or 1 decimal place
+                                if (value % 1 === 0) {
+                                    return value;
+                                }
+                                return Number(value).toFixed(1);
+                            },
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            },
+                            color: function(context) {
+                                const value = context.dataset.data[context.dataIndex];
+                                return value >= standard.min && value <= standard.max ? 
+                                    '#0C4A6E' : '#B91C1C';
+                            },
+                            padding: {
+                                top: 2
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                standardRangeBox: {
+                                    type: 'box',
+                                    xMin: -0.5,
+                                    xMax: 1.5,
+                                    yMin: standard.min,
+                                    yMax: standard.max,
+                                    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                                    borderColor: 'rgba(74, 222, 128, 0.3)',
+                                    borderWidth: 1
+                                },
+                                standardRangeLabel: {
+                                    type: 'label',
+                                    position: {
+                                        x: 'start',
+                                        y: 'start'
+                                    },
+                                    xValue: 0.5,
+                                    yValue: standard.max,
+                                    xAdjust: 0,
+                                    yAdjust: 5,
+                                    content: `Standard`,
+                                    font: {
+                                        size: 9
+                                    },
+                                    color: 'rgba(34, 197, 94, 0.8)'
+                                }
+                            }
                         }
                     }
                 }
             });
         }
 
-        // Generate charts for each comparison
-        createBarChart('phChart', 'pH', location1Data.ph, location2Data.ph);
-        createBarChart('bodChart', 'BOD', location1Data.bod, location2Data.bod);
-        createBarChart('codChart', 'COD', location1Data.cod, location2Data.cod);
-        createBarChart('temperatureChart', 'Temperature', location1Data.temperature, location2Data.temperature);
-        createBarChart('ammoniaChart', 'Ammonia', location1Data.ammonia, location2Data.ammonia);
-        createBarChart('arsenicChart', 'Arsenic', location1Data.arsenic, location2Data.arsenic);
-        createBarChart('calciumChart', 'Calcium', location1Data.calcium, location2Data.calcium);
-        createBarChart('ecChart', 'EC', location1Data.ec, location2Data.ec);
-        createBarChart('coliformChart', 'Coliform', location1Data.coliform, location2Data.coliform);
-        createBarChart('hardnessChart', 'Hardness', location1Data.hardness, location2Data.hardness);
-        createBarChart('lead_pbChart', 'Lead', location1Data.lead_pb, location2Data.lead_pb);
-        createBarChart('nitrogenChart', 'Nitrogen', location1Data.nitrogen, location2Data.nitrogen);
-        createBarChart('sodiumChart', 'Sodium', location1Data.sodium, location2Data.sodium);
-        createBarChart('sulfateChart', 'Sulfate', location1Data.sulfate, location2Data.sulfate);
-        createBarChart('tssChart', 'TSS', location1Data.tss, location2Data.tss);
-        createBarChart('turbidityChart', 'Turbidity', location1Data.turbidity, location2Data.turbidity);
-        createBarChart('tdsChart', 'TDS', location1Data.tds, location2Data.tds);
+        // Helper function to round a number up to a nice value
+        function ceilToNiceNumber(value) {
+            if (value === 0) return 1;
+            
+            const magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+            const normalized = value / magnitude;
+            
+            let niceValue;
+            if (normalized < 1.5) niceValue = 1.5;
+            else if (normalized < 2) niceValue = 2;
+            else if (normalized < 2.5) niceValue = 2.5;
+            else if (normalized < 5) niceValue = 5;
+            else niceValue = 10;
+            
+            return niceValue * magnitude;
+        }
+
+        // Create summary cards
+        createSummaryCards();
+
+        // Always create the main 5 charts
+        createEnhancedBarChart('phChart', 'ph', location1Data.ph, location2Data.ph);
+        createEnhancedBarChart('bodChart', 'bod', location1Data.bod, location2Data.bod);
+        createEnhancedBarChart('codChart', 'cod', location1Data.cod, location2Data.cod);
+        createEnhancedBarChart('temperatureChart', 'temperature', location1Data.temperature, location2Data.temperature);
+        createEnhancedBarChart('ammoniaChart', 'ammonia', location1Data.ammonia, location2Data.ammonia);
+
+        // Update the chart generation to show/hide containers for optional parameters
+        if (location1Data.arsenic !== undefined && location2Data.arsenic !== undefined) {
+            document.getElementById('arsenicChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('arsenicChart', 'arsenic', location1Data.arsenic, location2Data.arsenic);
+        }
+        if (location1Data.calcium !== undefined && location2Data.calcium !== undefined) {
+            document.getElementById('calciumChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('calciumChart', 'calcium', location1Data.calcium, location2Data.calcium);
+        }
+        if (location1Data.ec !== undefined && location2Data.ec !== undefined) {
+            document.getElementById('ecChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('ecChart', 'ec', location1Data.ec, location2Data.ec);
+        }
+        if (location1Data.coliform !== undefined && location2Data.coliform !== undefined) {
+            document.getElementById('coliformChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('coliformChart', 'coliform', location1Data.coliform, location2Data.coliform);
+        }
+        if (location1Data.hardness !== undefined && location2Data.hardness !== undefined) {
+            document.getElementById('hardnessChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('hardnessChart', 'hardness', location1Data.hardness, location2Data.hardness);
+        }
+        if (location1Data.lead_pb !== undefined && location2Data.lead_pb !== undefined) {
+            document.getElementById('lead_pbChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('lead_pbChart', 'lead_pb', location1Data.lead_pb, location2Data.lead_pb);
+        }
+        if (location1Data.nitrogen !== undefined && location2Data.nitrogen !== undefined) {
+            document.getElementById('nitrogenChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('nitrogenChart', 'nitrogen', location1Data.nitrogen, location2Data.nitrogen);
+        }
+        if (location1Data.sodium !== undefined && location2Data.sodium !== undefined) {
+            document.getElementById('sodiumChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('sodiumChart', 'sodium', location1Data.sodium, location2Data.sodium);
+        }
+        if (location1Data.sulfate !== undefined && location2Data.sulfate !== undefined) {
+            document.getElementById('sulfateChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('sulfateChart', 'sulfate', location1Data.sulfate, location2Data.sulfate);
+        }
+        if (location1Data.tss !== undefined && location2Data.tss !== undefined) {
+            document.getElementById('tssChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('tssChart', 'tss', location1Data.tss, location2Data.tss);
+        }
+        if (location1Data.turbidity !== undefined && location2Data.turbidity !== undefined) {
+            document.getElementById('turbidityChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('turbidityChart', 'turbidity', location1Data.turbidity, location2Data.turbidity);
+        }
+        if (location1Data.tds !== undefined && location2Data.tds !== undefined) {
+            document.getElementById('tdsChartContainer').classList.remove('hidden');
+            createEnhancedBarChart('tdsChart', 'tds', location1Data.tds, location2Data.tds);
+        }
     </script>
 </body>
 </html>

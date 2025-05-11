@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
 from config import SECRET_KEY, SESSION_TYPE, SESSION_PERMANENT
+from datetime import datetime
 
 # Import blueprints
 from routes.auth import auth_bp
@@ -70,11 +71,13 @@ def index():
                 location_count=location_count,
                 measurement_count=measurement_count,
                 researcher_count=researcher_count,
-                recent_locations=recent_locations
+                recent_locations=recent_locations,
+                current_time=datetime.now().strftime('%Y-%m-%d %H:%M')
             )
         
         else:
-            return redirect("/login")
+            # Show landing page for non-logged-in users
+            return render_template("index.html", current_time=datetime.now().strftime('%Y-%m-%d %H:%M'))
         
     if request.method == "POST":
         q = request.form.get("q")
