@@ -1,5 +1,6 @@
 from flask import Blueprint, request, render_template, session, redirect, url_for
 from models.db import get_cursor
+from routes.admin import admin_required
 
 # Create support blueprint
 support_bp = Blueprint('support', __name__)
@@ -28,11 +29,8 @@ def support():
 
 # Shows resolved tickets (FOR ADMIN ONLY)
 @support_bp.route("/resolved_tickets")
+@admin_required
 def resolved_tickets():
-    if session.get("user_type") != "A":
-        session["error_massage"] = "This page is only for admins."
-        return redirect("/apology")
-    
     cur, db = get_cursor()
     cur.execute("SELECT * FROM tickets WHERE status = 1")
     tickets = cur.fetchall()
@@ -53,11 +51,11 @@ def submit_support():
         user_id = session.get("user_id")
 
         if not subject or not description:
-            session["error_massage"] = "Subject and discription is mandatory"
+            session["error_message"] = "Subject and description is mandatory"
             return redirect("/apology")
         
         if len(subject) > 255 or len(description) > 6000:
-            session["error_massage"] = "Subject can not be more then 255 characters and description can not be more then 6000 characters"
+            session["error_message"] = "Subject can not be more than 255 characters and description can not be more than 6000 characters"
             return redirect("/apology")
             
         cur, db = get_cursor()
@@ -98,7 +96,7 @@ def support_view():
     db.close()
 
     if ticket_tuple[1] != session.get("user_id") and session["user_type"] != "A":
-        session["error_massage"] = "A ticket can be viewed by only the person who made it or a Admin"
+        session["error_message"] = "A ticket can be viewed by only the person who made it or a Admin"
         return redirect("/apology")
 
     if ticket_tuple[5] == 0:
@@ -150,11 +148,11 @@ def send_massage():
         cur.execute("SELECT status FROM tickets WHERE ticket_id = ?", (int(ticket_id), ))
         check = cur.fetchall()[0][0]
         if int(check) == 1:
-            session["error_massage"] = "Massage cant be sent to a closed ticket"
+            session["error_message"] = "Massage cant be sent to a closed ticket"
             return redirect("/apology")
 
         if len(message) > 2000:
-            session["error_massage"] = "Sorry, We only support massage that are less then 2000 characters"
+            session["error_message"] = "Sorry, We only support massage that are less then 2000 characters"
             return redirect("/apology")
 
         cur, db = get_cursor()
@@ -172,11 +170,8 @@ def send_massage():
 
 # Closing a ticket
 @support_bp.route("/close_ticket", methods=["POST"])
+@admin_required
 def close_ticket():
-    if session["user_type"] != "A":
-        session["error_massage"] = "Only a admin can close the ticket"
-        return redirect("/apology")
-    
     ticket_id = request.form.get("ticket_id")
     
     cur, db = get_cursor()

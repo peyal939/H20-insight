@@ -20,19 +20,19 @@ def register():
         last_name = request.form.get("last_name")
 
         if user_type not in ["V", "R"]:
-            session["error_massage"] = "Invalid user type."
+            session["error_message"] = "Invalid user type."
             return redirect("/apology")
 
         if not password or not password_again or not user_name or not email or not user_type:
-            session["error_massage"] = "Please fill out all the required fields."
+            session["error_message"] = "Please fill out all the required fields."
             return redirect("/apology")
 
         if password != password_again:
-            session["error_massage"] = "Confirmation password doesn't match."
+            session["error_message"] = "Confirmation password doesn't match."
             return redirect("/apology")
         
         if not first_name or not last_name:
-            session["error_massage"] = "Please provide first name and last name."
+            session["error_message"] = "Please provide first name and last name."
             return redirect("/apology")
         
         # Check if username is taken or email is already in use
@@ -45,7 +45,7 @@ def register():
         if cur.fetchone():
             cur.close()
             db.close()
-            session["error_massage"] = "Username taken or email allready in use"
+            session["error_message"] = "Username taken or email already in use"
             return redirect("/apology")
 
         cur.close()
@@ -77,11 +77,11 @@ def login():
         password = request.form.get("password")
 
         if not identification:
-            session["error_massage"] = "Must provide username or email"
+            session["error_message"] = "Must provide username or email"
             return redirect("/apology")
 
         if not password:
-            session["error_massage"] = "Must provide password"
+            session["error_message"] = "Must provide password"
             return redirect("/apology")
 
         cur, db = get_cursor()
@@ -92,21 +92,16 @@ def login():
         
         user = cur.fetchone()
         if not user:
-            session["error_massage"] = "Invalid username or email"
+            session["error_message"] = "Invalid username or email"
             return redirect("/apology")
         
-        # Re-execute to get all columns since we consumed the result
-        cur.execute(query, data)
-        user = cur.fetchall()[0]
-
-        #  user[3] = password_hash
+        # Check password using the user we already fetched
         if check_password_hash(user[3], password):
             session["user_id"] = user[0]
             session["user_name"] = user[1]
             session["user_type"] = user[4]
-
         else:
-            session["error_massage"] = "incorrect password"
+            session["error_message"] = "Incorrect password"
             return redirect("/apology")
     
         cur.close()
@@ -122,6 +117,6 @@ def logout():
 
 @auth_bp.route("/apology")
 def apology():
-    error_massage = session.get("error_massage", "Unknown error")
-    session["error_massage"] = None
-    return render_template("apology.html", error_massage=error_massage) 
+    error_message = session.get("error_message", "Unknown error")
+    session["error_message"] = None
+    return render_template("apology.html", error_message=error_message) 

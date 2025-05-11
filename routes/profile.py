@@ -48,7 +48,7 @@ def edit_profile():
 
         # Gets the user data form the database and replace the none with them
         cur, db = get_cursor()
-        cur.execute("SELECT * FROM users WHERE user_id = ?", (session.get("user_id"), ))
+        cur.execute("SELECT * FROM users WHERE user_id = ?", (int(session.get("user_id")), ))
         user_data_old = cur.fetchall()[0]
         cur.close()
         db.close()
@@ -62,7 +62,7 @@ def edit_profile():
             cur, db = get_cursor()
             cur.execute("SELECT * FROM users WHERE email = ?", (email, ))
             if cur.fetchone():
-                session["error_massage"] = "Email is allready assined to another user please try again"
+                session["error_message"] = "Email is already assigned to another user please try again"
                 return redirect("/apology")
             user_data_new["email"] = email
 
@@ -72,7 +72,7 @@ def edit_profile():
             user_data_new["latitude"] = user_data_old[5]
         else:
             if not (-90 <= float(latitude) <= 90):
-                session["error_massage"] = "latitude must be between (-90) and (90)"
+                session["error_message"] = "latitude must be between (-90) and (90)"
                 return redirect("/apology")
             else:
                 user_data_new["latitude"] = latitude
@@ -81,7 +81,7 @@ def edit_profile():
             user_data_new["longitude"] = user_data_old[6]
         else:
             if not (-180 <= float(longitude) <= 180):
-                session["error_massage"] = "longitude must be between (-180) and (180)"
+                session["error_message"] = "longitude must be between (-180) and (180)"
                 return redirect("/apology")
             else:
                 user_data_new["longitude"] = longitude
@@ -100,7 +100,7 @@ def edit_profile():
         # Updating database with the new data (Using old data if new data is not provited by the user)
         cur, db = get_cursor()
         query = "UPDATE users SET email = ?, latitude = ?, longitude = ?, first_name = ?, last_name = ? WHERE user_id = ?"
-        data = (user_data_new["email"], user_data_new["latitude"], user_data_new["longitude"], user_data_new["first_name"], user_data_new["last_name"], session.get("user_id"))
+        data = (user_data_new["email"], user_data_new["latitude"], user_data_new["longitude"], user_data_new["first_name"], user_data_new["last_name"], int(session.get("user_id")))
         cur.execute(query, data)
         db.commit()
         cur.close()
@@ -120,15 +120,15 @@ def change_password():
         password_again = request.form.get("password_again")
 
         if not password or not password_again and not old_password:
-            session["error_massage"] = "Please fill all the filds"
+            session["error_message"] = "Please fill all the fields"
             return redirect("/apology")
         
         if password != password_again:
-            session["error_massage"] = "Confirmation password does not match"
+            session["error_message"] = "Confirmation password does not match"
             return redirect("/apology")
         
         cur, db = get_cursor()
-        cur.execute("SELECT password_hash FROM users WHERE user_id = ?", (session.get("user_id"), ))
+        cur.execute("SELECT password_hash FROM users WHERE user_id = ?", (int(session.get("user_id")), ))
         
         # Checking if the privious password is correct
         if check_password_hash(cur.fetchall()[0][0], old_password):
@@ -137,14 +137,14 @@ def change_password():
             cur, db = get_cursor()
             cur.execute("UPDATE users SET password_hash = ? WHERE user_id = ?", (
                 str(generate_password_hash(password)),
-                session.get("user_id")
+                int(session.get("user_id"))
             ))
             db.commit()
             cur.close()
             db.close()
 
         else:
-            session["error_massage"] = "Incorrect Password, please try again"
+            session["error_message"] = "Incorrect Password, please try again"
             return redirect("/apology")
 
         return redirect(url_for("profile.profile")) 

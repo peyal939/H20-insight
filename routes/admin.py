@@ -4,26 +4,33 @@ from decimal import Decimal
 from models.db import get_cursor, DatabaseConnection, has_rows
 import os
 import datetime
+from functools import wraps
 
 # Create admin blueprint - This registers all admin routes with Flask
 admin_bp = Blueprint('admin', __name__)
+
+# Admin access decorator
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_type") != "A":
+            session["error_message"] = "This page is only for admins."
+            return redirect(url_for("auth.apology"))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # -------------------------------------------------------------------------
 # ADMIN DASHBOARD ROUTES
 # -------------------------------------------------------------------------
 
 @admin_bp.route("/admin")
+@admin_required
 def admin():
     """
     Admin dashboard that displays system statistics.
     Access restricted to admin users only.
     Shows counts of users, locations, and measurements.
     """
-    # Verify admin access - redirect non-admins
-    if session.get("user_type") != "A":
-        session["error_massage"] = "This page is only for admins."
-        return redirect(url_for("auth.apology"))
-    
     # Get statistics for admin dashboard
     cur, db = get_cursor()
     
@@ -57,16 +64,12 @@ def admin():
 # -------------------------------------------------------------------------
 
 @admin_bp.route("/admin_users")
+@admin_required
 def admin_users():
     """
     Displays a list of all non-admin users in the system.
     Only accessible to administrators.
     """
-    # Verify admin access
-    if session.get("user_type") != "A":
-        session["error_massage"] = "This page is only for admins."
-        return redirect(url_for("auth.apology"))
-    
     # Gets all users excluding admins
     cur, db = get_cursor()
     cur.execute("SELECT user_id, user_name, user_type FROM users WHERE user_type != 'A'")
@@ -78,23 +81,19 @@ def admin_users():
 
 
 @admin_bp.route("/admin_user_edit", methods=["GET", "POST"])
+@admin_required
 def admin_user_edit():
     """
     Allows administrators to edit user information.
     GET: Displays a form with the user's current information.
     POST: Processes form submission and updates user data.
     """
-    # Verify admin access
-    if session.get("user_type") != "A":
-        session["error_massage"] = "This page is only for admins."
-        return redirect(url_for("auth.apology"))
-    
     # Get user_id from either URL parameter (GET) or form data (POST)
     user_id = request.args.get("user_id") if request.method == "GET" else request.form.get("user_id")
     
     # Validate user_id is provided
     if not user_id:
-        session["error_massage"] = "No user ID provided."
+        session["error_message"] = "No user ID provided."
         return redirect(url_for("auth.apology"))
 
     if request.method == "GET":
@@ -114,7 +113,7 @@ def admin_user_edit():
             
             # Check if any result was returned
             if not result:
-                session["error_massage"] = f"No user found with ID {user_id}."
+                session["error_message"] = f"No user found with ID {user_id}."
                 cur.close()
                 db.close()
                 return redirect(url_for("auth.apology"))
@@ -124,7 +123,7 @@ def admin_user_edit():
             db.close()
         except ValueError:
             # Handle cases where user_id is not a valid integer
-            session["error_massage"] = "Invalid user ID format."
+            session["error_message"] = "Invalid user ID format."
             cur.close()
             db.close()
             return redirect(url_for("auth.apology"))
@@ -155,7 +154,7 @@ def admin_user_edit():
         
         # Check if user exists
         if not current_user:
-            session["error_massage"] = f"No user found with ID {user_id}."
+            session["error_message"] = f"No user found with ID {user_id}."
             cur.close()
             db.close()
             return redirect(url_for("auth.apology"))
@@ -173,7 +172,7 @@ def admin_user_edit():
             if cur.fetchone():
                 cur.close()
                 db.close()
-                session["error_massage"] = "Username already exists"
+                session["error_message"] = "Username already exists"
                 return redirect(url_for("auth.apology"))
             else:
                 cur.close()
@@ -193,7 +192,7 @@ def admin_user_edit():
             if cur.fetchone():
                 cur.close()
                 db.close()
-                session["error_massage"] = "Email is already in use"
+                session["error_message"] = "Email is already in use"
                 return redirect(url_for("auth.apology"))
             else:
                 cur.close()
@@ -209,7 +208,7 @@ def admin_user_edit():
         if password:
             # Validate password confirmation matches
             if password != password_again:
-                session["error_massage"] = "Confirmation dose not match"
+                session["error_message"] = "Confirmation dose not match"
                 return redirect(url_for("auth.apology"))
             
             # Hash password and update in database
@@ -224,19 +223,29 @@ def admin_user_edit():
         if latitude is not None:
             if not (-90 <= float(latitude) <= 90):
                 return jsonify({"success": False, "message": "Latitude must be between -90 and 90"})
+            cur, db = get_cursor()
             cur.execute("UPDATE users SET latitude = ? WHERE user_id = ?", (float(latitude), user_id))
+            db.commit()
+            cur.close()
+            db.close()
+            changes_made = True
         
         # Update longitude if provided and valid
         if longitude is not None:
             if not (-180 <= float(longitude) <= 180):
                 return jsonify({"success": False, "message": "Longitude must be between -180 and 180"})
+            cur, db = get_cursor()
             cur.execute("UPDATE users SET longitude = ? WHERE user_id = ?", (float(longitude), user_id))
+            db.commit()
+            cur.close()
+            db.close()
+            changes_made = True
 
         # Update first name if provided
         if first_name:
             # Validate first name length
             if len(first_name) > 255:
-                session["error_massage"] = "First name must be less then 255 characters"
+                session["error_message"] = "First name must be less then 255 characters"
                 return redirect(url_for("auth.apology"))
             
             cur, db = get_cursor()
@@ -250,7 +259,7 @@ def admin_user_edit():
         if last_name:
             # Validate last name length
             if len(last_name) > 255:
-                session["error_massage"] = "Last name must be less then 255 characters"
+                session["error_message"] = "Last name must be less then 255 characters"
                 return redirect(url_for("auth.apology"))
             
             cur, db = get_cursor()
@@ -264,7 +273,7 @@ def admin_user_edit():
         if user_type:
             # Validate user type is valid (Volunteer or Researcher)
             if user_type not in ["V", "R"]:
-                session["error_massage"] = "Invalid user type"
+                session["error_message"] = "Invalid user type"
                 return redirect(url_for("auth.apology"))
             
             cur, db = get_cursor()
@@ -292,17 +301,13 @@ def admin_user_edit():
 # -------------------------------------------------------------------------
 
 @admin_bp.route("/admin_locations")
+@admin_required
 def admin_locations():
     """
     Displays a list of all locations in the system.
     Shows location details including who created each location.
     Only accessible to administrators.
     """
-    # Verify admin access
-    if session.get("user_type") != "A":
-        session["error_massage"] = "This page is only for admins."
-        return redirect(url_for("auth.apology"))
-
     cur, db = get_cursor()
     # Join with users table to get creator information
     cur.execute("""
@@ -331,23 +336,19 @@ def admin_locations():
 
 
 @admin_bp.route("/admin_location_edit", methods=["GET", "POST"])
+@admin_required
 def admin_location_edit():
     """
     Allows administrators to edit location information.
     GET: Displays a form with the location's current information.
     POST: Processes form submission and updates location data.
     """
-    # Verify admin access
-    if session.get("user_type") != "A":
-        session["error_massage"] = "This page is only for admins."
-        return redirect(url_for("auth.apology"))
-    
     # Get location_id from either URL parameter (GET) or form data (POST)
     location_id = request.args.get("location_id") if request.method == "GET" else request.form.get("location_id")
     
     # Validate location_id is provided
     if not location_id:
-        session["error_massage"] = "No location ID provided."
+        session["error_message"] = "No location ID provided."
         return redirect(url_for("auth.apology"))
 
     if request.method == "GET":
@@ -359,7 +360,7 @@ def admin_location_edit():
         
         # Check if any result was returned
         if not result:
-            session["error_massage"] = f"No location found with ID {location_id}."
+            session["error_message"] = f"No location found with ID {location_id}."
             cur.close()
             db.close()
             return redirect(url_for("auth.apology"))
@@ -386,7 +387,7 @@ def admin_location_edit():
         if not cur.fetchone():
             cur.close()
             db.close()
-            session["error_massage"] = f"No location found with ID {location_id}."
+            session["error_message"] = f"No location found with ID {location_id}."
             return redirect(url_for("auth.apology"))
         cur.close()
         db.close()
@@ -395,7 +396,7 @@ def admin_location_edit():
         if location_name:
             # Validate location name length
             if len(location_name) > 255:
-                session["error_massage"] = "Location name must be less then 255 chracters"
+                session["error_message"] = "Location name must be less then 255 chracters"
                 return redirect(url_for("auth.apology"))
             
             # Check if location name is already taken by another location
@@ -404,7 +405,7 @@ def admin_location_edit():
             if cur.fetchone():
                 cur.close()
                 db.close()
-                session["error_massage"] = "Location name taken"
+                session["error_message"] = "Location name taken"
                 return redirect(url_for("auth.apology"))
            
             # Update location name in database
@@ -418,7 +419,7 @@ def admin_location_edit():
         if description:
             # Validate description length
             if len(description) > 6000:
-                session["error_massage"] = "Description must be less then 6000 chracters"
+                session["error_message"] = "Description must be less then 6000 chracters"
                 return redirect(url_for("auth.apology"))
             
             # Update description in database
@@ -432,13 +433,21 @@ def admin_location_edit():
         if latitude is not None:
             if not (-90 <= float(latitude) <= 90):
                 return jsonify({"success": False, "message": "Latitude must be between -90 and 90"})
+            cur, db = get_cursor()
             cur.execute("UPDATE locations SET latitude = ? WHERE location_id = ?", (float(latitude), location_id))
+            db.commit()
+            cur.close()
+            db.close()
         
         # Update longitude if provided and valid
         if longitude is not None:
             if not (-180 <= float(longitude) <= 180):
                 return jsonify({"success": False, "message": "Longitude must be between -180 and 180"})
+            cur, db = get_cursor()
             cur.execute("UPDATE locations SET longitude = ? WHERE location_id = ?", (float(longitude), location_id))
+            db.commit()
+            cur.close()
+            db.close()
 
         return redirect(url_for("admin.admin_location_edit", location_id=location_id))
 
@@ -448,22 +457,18 @@ def admin_location_edit():
 # -------------------------------------------------------------------------
 
 @admin_bp.route("/delete_user", methods=["POST"])
+@admin_required
 def delete_user():
     """
     Deletes a user from the system.
     Only accessible to administrators.
     Requires a valid user_id in the form data.
     """
-    # Verify admin access
-    if session.get("user_type") != "A":
-        session["error_massage"] = "This page is only for admins."
-        return redirect(url_for("auth.apology"))
-    
     user_id = request.form.get("user_id")
     
     # Validate user_id is provided
     if not user_id:
-        session["error_massage"] = "No user ID provided."
+        session["error_message"] = "No user ID provided."
         return redirect(url_for("auth.apology"))
         
     try:
@@ -473,7 +478,7 @@ def delete_user():
         if not cur.fetchone():
             cur.close()
             db.close()
-            session["error_massage"] = f"No user found with ID {user_id}."
+            session["error_message"] = f"No user found with ID {user_id}."
             return redirect(url_for("auth.apology"))
             
         # Delete user from database
@@ -485,27 +490,23 @@ def delete_user():
         return redirect(url_for("admin.admin_users"))
     except ValueError:
         # Handle cases where user_id is not a valid integer
-        session["error_massage"] = "Invalid user ID format."
+        session["error_message"] = "Invalid user ID format."
         return redirect(url_for("auth.apology"))
     
 
 @admin_bp.route("/delete_location", methods=["POST"])
+@admin_required
 def delete_location():
     """
     Deletes a location from the system.
     Only accessible to administrators.
     Requires a valid location_id in the form data.
     """
-    # Verify admin access
-    if session.get("user_type") != "A":
-        session["error_massage"] = "This page is only for admins."
-        return redirect(url_for("auth.apology"))
-    
     location_id = request.form.get("location_id")
     
     # Validate location_id is provided
     if not location_id:
-        session["error_massage"] = "No location ID provided."
+        session["error_message"] = "No location ID provided."
         return redirect(url_for("auth.apology"))
         
     try:
@@ -515,7 +516,7 @@ def delete_location():
         if not cur.fetchone():
             cur.close()
             db.close()
-            session["error_massage"] = f"No location found with ID {location_id}."
+            session["error_message"] = f"No location found with ID {location_id}."
             return redirect(url_for("auth.apology"))
             
         # Delete location from database
@@ -527,28 +528,24 @@ def delete_location():
         return redirect(url_for("admin.admin_locations"))
     except ValueError:
         # Handle cases where location_id is not a valid integer
-        session["error_massage"] = "Invalid location ID format."
+        session["error_message"] = "Invalid location ID format."
         return redirect(url_for("auth.apology"))
     
 
 @admin_bp.route("/delete_data", methods=["POST"])
+@admin_required
 def delete_data():
     """
     Deletes a water quality data entry from the system.
     Only accessible to administrators.
     Requires valid data_id and location_id in the form data.
     """
-    # Verify admin access
-    if session.get("user_type") != "A":
-        session["error_massage"] = "This page is only for admins."
-        return redirect(url_for("auth.apology"))
-    
     data_id = request.form.get("data_id")
     location_id = request.form.get("location_id")
     
     # Validate data_id and location_id are provided
     if not data_id or not location_id:
-        session["error_massage"] = "Data ID or Location ID not provided."
+        session["error_message"] = "Data ID or Location ID not provided."
         return redirect(url_for("auth.apology"))
         
     try:
@@ -558,7 +555,7 @@ def delete_data():
         if not cur.fetchone():
             cur.close()
             db.close()
-            session["error_massage"] = f"No data found with ID {data_id}."
+            session["error_message"] = f"No data found with ID {data_id}."
             return redirect(url_for("auth.apology"))
             
         # Check if location exists
@@ -566,7 +563,7 @@ def delete_data():
         if not cur.fetchone():
             cur.close()
             db.close()
-            session["error_massage"] = f"No location found with ID {location_id}."
+            session["error_message"] = f"No location found with ID {location_id}."
             return redirect(url_for("auth.apology"))
             
         # Delete data from database
@@ -579,5 +576,5 @@ def delete_data():
         return redirect(url_for("locations.view", location_id=location_id))
     except ValueError:
         # Handle cases where data_id or location_id is not a valid integer
-        session["error_massage"] = "Invalid ID format."
+        session["error_message"] = "Invalid ID format."
         return redirect(url_for("auth.apology")) 

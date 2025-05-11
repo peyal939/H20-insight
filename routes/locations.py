@@ -31,7 +31,7 @@ def add_location():
 
         # Validate location name is provided
         if not location_name:
-            session["error_massage"] = "You must enter a location name."
+            session["error_message"] = "You must enter a location name."
             return redirect(url_for("auth.apology"))
         
         # Check if the location already exists
@@ -42,10 +42,10 @@ def add_location():
                 cur.execute(query, data)
                 
                 if cur.fetchone():
-                    session["error_massage"] = "The name of the river must be unique"
+                    session["error_message"] = "The name of the river must be unique"
                     return redirect(url_for("auth.apology"))
         except Exception as e:
-            session["error_massage"] = f"Error checking location name: {str(e)}"
+            session["error_message"] = f"Error checking location name: {str(e)}"
             return redirect(url_for("auth.apology"))
 
         try: 
@@ -57,12 +57,12 @@ def add_location():
                 # Insert new location with or without description
                 if description:
                     query = "INSERT INTO locations (user_id, location_name, description, latitude, longitude) VALUES (?, ?, ?, ?, ?)"
-                    data = (session.get("user_id"), location_name, description, latitude, longitude)    
+                    data = (int(session.get("user_id")), location_name, description, latitude, longitude)    
                     cur.execute(query, data)
                 
                 else:
                     query = "INSERT INTO locations (user_id, location_name, latitude, longitude) VALUES (?, ?, ?, ?)"
-                    data = (session.get("user_id"), location_name, latitude, longitude)
+                    data = (int(session.get("user_id")), location_name, latitude, longitude)
                     cur.execute(query, data)
                 
                 # Commit the new location to the database
@@ -76,7 +76,7 @@ def add_location():
         
         except Exception as e:
             # Handle errors related to data length or other database issues
-            session["error_massage"] = f"Error adding location: {str(e)}"
+            session["error_message"] = f"Error adding location: {str(e)}"
             return redirect(url_for("auth.apology"))
         
         # Check if water parameters were provided with the new location
@@ -126,7 +126,7 @@ def add_location():
             
             # Validate pH is within valid range (0-14)
             if ph is not None and (ph < 0 or ph > 14):
-                session["error_massage"] = "pH value must be between 0 and 14"
+                session["error_message"] = "pH value must be between 0 and 14"
                 return redirect(url_for("auth.apology"))
 
             try:
@@ -137,7 +137,7 @@ def add_location():
                     cur.execute(query, data)
                     db.commit()
             except Exception as e:
-                session["error_massage"] = f"Error saving water quality data: {str(e)}"
+                session["error_message"] = f"Error saving water quality data: {str(e)}"
                 return redirect(url_for("auth.apology"))
 
         # Redirect to view the newly created location
@@ -156,7 +156,7 @@ def edit_location():
         
         # Validate location ID is provided
         if not location_id:
-            session["error_massage"] = "Must provide location ID"
+            session["error_message"] = "Must provide location ID"
             return redirect("/apology")
         
         # Get location data from database
@@ -172,7 +172,7 @@ def edit_location():
 
         # Verify user is the owner of the location
         if location[1] != session["user_id"]:
-            session["error_massage"] = "Only the person who uploaded the location can make chnages to it"
+            session["error_message"] = "Only the person who uploaded the location can make chnages to it"
             return redirect("/apology")
         
         # Format location data for the edit form
@@ -209,22 +209,22 @@ def edit_location_function():
 
     # Validate description length
     if len(description) > 6000:
-        session["error_massage"] = "Description must be less then 6000 characters long"
+        session["error_message"] = "Description must be less then 6000 characters long"
         return redirect("/apology")
     
     # Ensure both latitude and longitude are provided together
     if (latitude and not longitude) or (not latitude and longitude):
-        session["error_massage"] = "Both latitude and longitude must be included to add geo location"
+        session["error_message"] = "Both latitude and longitude must be included to add geo location"
         return redirect("/apology")
 
     # Validate coordinate values if provided
     if latitude and longitude:
         if not (-90 <= float(latitude) <= 90):
-            session["error_massage"] = "latitude must be between (-90) and (90)"
+            session["error_message"] = "latitude must be between (-90) and (90)"
             return redirect("/apology")
         
         if not (-180 <= float(longitude) <= 180):
-            session["error_massage"] = "longitude must be between (-180) and (180)"
+            session["error_message"] = "longitude must be between (-180) and (180)"
             return redirect("/apology")
     
         # Convert coordinates to float for database
@@ -261,7 +261,7 @@ def view():
 
     # Validate location ID is provided
     if not location_id:
-        session["error_massage"] = "Must provide a valid location ID"
+        session["error_message"] = "Must provide a valid location ID"
         return redirect(url_for("auth.apology"))
 
     try:
@@ -274,7 +274,7 @@ def view():
             # Check if location exists
             location_data_row = cur.fetchone()
             if not location_data_row:
-                session["error_massage"] = "The location you are requesting does not exist"
+                session["error_message"] = "The location you are requesting does not exist"
                 return redirect(url_for("auth.apology"))
             
             # Get location data
@@ -319,11 +319,11 @@ def view():
                 ]    
     except ValueError:
         # Handle invalid location ID format
-        session["error_massage"] = "Invalid location ID format"
+        session["error_message"] = "Invalid location ID format"
         return redirect(url_for("auth.apology"))
     except Exception as e:
         # Handle other errors
-        session["error_massage"] = f"Error retrieving location data: {str(e)}"
+        session["error_message"] = f"Error retrieving location data: {str(e)}"
         return redirect(url_for("auth.apology"))
         
     # Set location coordinates to None if they're default values (0.00)

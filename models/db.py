@@ -21,13 +21,29 @@ def get_db_connection():
 
 # Function to check if a result set has rows (replacement for cur.rowcount check)
 def has_rows(cursor):
-    """Check if the cursor result has any rows"""
+    """
+    Check if the cursor result has any rows
+    
+    Note: This will consume the first row of the result set.
+    After calling this function, you should re-execute your query
+    if you need the complete result set.
+    
+    Usage pattern:
+    
+    cur.execute("SELECT * FROM table WHERE condition = ?", (value,))
+    if has_rows(cur):
+        # Re-execute the query to get all results
+        cur.execute("SELECT * FROM table WHERE condition = ?", (value,))
+        results = cur.fetchall()
+        # Process results...
+    else:
+        # No rows found
+        pass
+    """
+    # The simplest and most reliable approach for SQLite
+    # Just check if fetchone() returns a row
     row = cursor.fetchone()
-    if row:
-        # Reset cursor by re-executing the last query
-        cursor.execute(cursor.statement, cursor.getconnection().last_execute_params or ())
-        return True
-    return False
+    return row is not None
 
 # Get a cursor for database operations
 def get_cursor(dictionary=False):

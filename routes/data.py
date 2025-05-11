@@ -59,7 +59,7 @@ def add_data():
         
         # Validate pH is within valid range (0-14)
         if ph is not None and (ph < 0 or ph > 14):
-            session["error_massage"] = "pH value must be between 0 and 14"
+            session["error_message"] = "pH value must be between 0 and 14"
             return redirect(url_for("auth.apology"))
 
         # Use a context manager to ensure database connection is properly closed
@@ -70,7 +70,7 @@ def add_data():
                 cur.execute(query, data)
                 db.commit()
         except Exception as e:
-            session["error_massage"] = f"Error saving data: {str(e)}"
+            session["error_message"] = f"Error saving data: {str(e)}"
             return redirect(url_for("auth.apology"))
 
         # Redirect to view the location with the new data
@@ -161,7 +161,7 @@ def view_data():
 
     except:
         # Handle any errors that occur during data retrieval
-        session["error_massage"] = "API abuse or SQL erro please contact the admins"
+        session["error_message"] = "API abuse or SQL erro please contact the admins"
         return redirect("/apology")
 
     # Render the view template with location and parameter data
@@ -191,7 +191,7 @@ def compare_between():
                 cur.execute(query, data)
                 data_list = cur.fetchall()
         except Exception as e:
-            session["error_massage"] = f"Error retrieving data: {str(e)}"
+            session["error_message"] = f"Error retrieving data: {str(e)}"
             return redirect(url_for("auth.apology"))
 
         # Display form to select which data entries to compare
@@ -235,7 +235,7 @@ def compare_between():
                 # Get dates for both entries
                 date = [data_tupe[3], data_tupe_2[3]]
         except Exception as e:
-            session["error_massage"] = f"Error retrieving data: {str(e)}"
+            session["error_message"] = f"Error retrieving data: {str(e)}"
             return redirect(url_for("auth.apology"))
         
         # Process data based on selected comparison type
@@ -332,7 +332,7 @@ def compare_between_locations():
                 cur.execute(query)
                 locations_tuple_liist = cur.fetchall()
         except Exception as e:
-            session["error_massage"] = f"Error retrieving locations: {str(e)}"
+            session["error_message"] = f"Error retrieving locations: {str(e)}"
             return redirect(url_for("auth.apology"))
 
         locations_dict_list = []
@@ -349,7 +349,7 @@ def compare_between_locations():
         location_id_2 = request.form.get("location_id_2")
 
         if location_id_1 == location_id_2:
-            session["error_massage"] = "You have selected the same location to compare, please select diffrent locations"
+            session["error_message"] = "You have selected the same location to compare, please select diffrent locations"
             return redirect(url_for("auth.apology"))
 
         try:
@@ -378,7 +378,7 @@ def compare_between_locations():
                 cur.execute(query, (int(location_id_2),))
                 data_tupe_2 = cur.fetchall()[0]
         except Exception as e:
-            session["error_massage"] = f"Error retrieving location data: {str(e)}"
+            session["error_message"] = f"Error retrieving location data: {str(e)}"
             return redirect(url_for("auth.apology"))
 
         if compare_in == "table":   
@@ -470,7 +470,7 @@ def analyze_water(data_id):
             
             water_data = cur.fetchone()
             if not water_data:
-                session["error_massage"] = "Data not found"
+                session["error_message"] = "Data not found"
                 return redirect(url_for("auth.apology"))
             
             # Get location information
@@ -480,7 +480,7 @@ def analyze_water(data_id):
             cur.execute(query, data)
             location = cur.fetchone()
     except Exception as e:
-        session["error_massage"] = f"Error retrieving data for analysis: {str(e)}"
+        session["error_message"] = f"Error retrieving data for analysis: {str(e)}"
         return redirect(url_for("auth.apology"))
     
     # Analyze water quality
@@ -510,7 +510,7 @@ def download_report(data_id):
             
             water_data = cur.fetchone()
             if not water_data:
-                session["error_massage"] = "Data not found"
+                session["error_message"] = "Data not found"
                 return redirect(url_for("auth.apology"))
             
             # Get location information
@@ -527,7 +527,7 @@ def download_report(data_id):
         pdf_path = generate_water_quality_report(location, water_data, analysis_result)
         
         if not pdf_path or not os.path.exists(pdf_path):
-            session["error_massage"] = "Error generating PDF report. Please try again later."
+            session["error_message"] = "Error generating PDF report. Please try again later."
             return redirect(url_for("auth.apology"))
         
         # Create a filename for the download
@@ -544,7 +544,7 @@ def download_report(data_id):
             )
         except Exception as e:
             print(f"Error sending file: {e}")
-            session["error_massage"] = "Error sending PDF report. Please try again later."
+            session["error_message"] = "Error sending PDF report. Please try again later."
             return redirect(url_for("auth.apology"))
         finally:
             # Clean up the temporary file after sending
@@ -556,7 +556,7 @@ def download_report(data_id):
     
     except Exception as e:
         print(f"Error in download_report: {e}")
-        session["error_massage"] = f"An error occurred while generating the report: {str(e)}"
+        session["error_message"] = f"An error occurred while generating the report: {str(e)}"
         return redirect(url_for("auth.apology"))
 
 @data_bp.route("/gauge_visualization/<int:data_id>")
@@ -576,7 +576,7 @@ def gauge_visualization(data_id):
             
             water_data = cur.fetchone()
             if not water_data:
-                session["error_massage"] = "Data not found"
+                session["error_message"] = "Data not found"
                 return redirect(url_for("auth.apology"))
             
             # Get location information
@@ -586,7 +586,7 @@ def gauge_visualization(data_id):
             cur.execute(query, data)
             location = cur.fetchone()
     except Exception as e:
-        session["error_massage"] = f"Error retrieving data for visualization: {str(e)}"
+        session["error_message"] = f"Error retrieving data for visualization: {str(e)}"
         return redirect(url_for("auth.apology"))
     
     # Define acceptable ranges for parameters
