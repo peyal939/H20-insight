@@ -77,7 +77,13 @@
                                 <div class="py-3 flex justify-between items-center">
                                     <div>
                                         <h4 class="font-medium text-gray-800">{{ location.location_name }}</h4>
-                                        <p class="text-sm text-gray-500">Added {{ location.date_submitted.strftime('%Y-%m-%d') }}</p>
+                                        <p class="text-sm text-gray-500">Added 
+                                            {% if location.date_submitted is string %}
+                                                {{ location.date_submitted }}
+                                            {% else %}
+                                                {{ location.date_submitted.strftime('%Y-%m-%d') if location.date_submitted else 'N/A' }}
+                                            {% endif %}
+                                        </p>
                                     </div>
                                     <a href="{{ url_for('locations.view', location_id=location.location_id) }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View</a>
                                 </div>

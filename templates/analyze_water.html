@@ -17,7 +17,13 @@
                     Water Quality Analysis: {{ location.location_name }}
                 </h2>
                 <div>
-                    <span class="text-sm opacity-80">Sample Date: {{ water_data.date_submitted.strftime('%Y-%m-%d') }}</span>
+                    <span class="text-sm opacity-80">Sample Date: 
+                        {% if water_data.date_submitted is string %}
+                            {{ water_data.date_submitted }}
+                        {% else %}
+                            {{ water_data.date_submitted.strftime('%Y-%m-%d') }}
+                        {% endif %}
+                    </span>
                 </div>
             </div>
         </div>

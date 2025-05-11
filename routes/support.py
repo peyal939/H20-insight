@@ -15,7 +15,7 @@ def support():
     
     # If the user is a researcher or a viewer get all tickets that he has submitted
     else:
-        query = "SELECT * FROM tickets WHERE user_id = %s ORDER BY date DESC"
+        query = "SELECT * FROM tickets WHERE user_id = ? ORDER BY date DESC"
         data = (int(session.get("user_id")), )
         cur.execute(query, data)
         tickets = cur.fetchall()
@@ -62,7 +62,7 @@ def submit_support():
             
         cur, db = get_cursor()
         
-        query = "INSERT INTO tickets (user_id, subject, description) VALUES (%s, %s, %s)"
+        query = "INSERT INTO tickets (user_id, subject, description) VALUES (?, ?, ?)"
         data = (int(user_id), subject, description)
         cur.execute(query, data)
 
@@ -73,10 +73,10 @@ def submit_support():
         # Geting the support id that just have been submited
         cur, db = get_cursor()
 
-        query = "SELECT ticket_id FROM tickets WHERE user_id = %s ORDER BY date DESC LIMIT 1"
+        query = "SELECT ticket_id FROM tickets WHERE user_id = ? ORDER BY date DESC LIMIT 1"
         data = (int(session.get("user_id")), )
         cur.execute(query, data)
-        ticket_id = int(cur.fetchall()[0][0])
+        ticket_id = int(cur.fetchone()[0])
         cur.close()
         db.close()
 
@@ -89,7 +89,7 @@ def support_view():
     
     cur, db = get_cursor()
 
-    query = "SELECT * FROM tickets WHERE ticket_id = %s"
+    query = "SELECT * FROM tickets WHERE ticket_id = ?"
     data = (ticket_id, )
     cur.execute(query, data)
 
@@ -121,11 +121,11 @@ def support_view():
     # Get all the messages of this ticket
     cur, db = get_cursor()
 
-    query = "SELECT text, user_type, user_name, date FROM messages JOIN users ON messages.user_id = users.user_id WHERE ticket_id = %s ORDER BY date ASC"
+    query = "SELECT text, user_type, user_name, date FROM messages JOIN users ON messages.user_id = users.user_id WHERE ticket_id = ? ORDER BY date ASC"
     data = (int(ticket_id), )
     cur.execute(query, data)
 
-    if cur.rowcount == 0:
+    if not cur.fetchone():
         messeges = None
     
     else:
@@ -147,7 +147,7 @@ def send_massage():
 
         # Checks if the ticket is closed or not
         cur, db = get_cursor()
-        cur.execute("SELECT status FROM tickets WHERE ticket_id = %s", (int(ticket_id), ))
+        cur.execute("SELECT status FROM tickets WHERE ticket_id = ?", (int(ticket_id), ))
         check = cur.fetchall()[0][0]
         if int(check) == 1:
             session["error_massage"] = "Massage cant be sent to a closed ticket"
@@ -159,7 +159,7 @@ def send_massage():
 
         cur, db = get_cursor()
         
-        query = "INSERT INTO messages (user_id, ticket_id, text) VALUES (%s, %s, %s)"
+        query = "INSERT INTO messages (user_id, ticket_id, text) VALUES (?, ?, ?)"
         data = (user_id, ticket_id, message)
         cur.execute(query, data)
 
@@ -181,7 +181,7 @@ def close_ticket():
     
     cur, db = get_cursor()
 
-    query = "UPDATE tickets SET status = 1 WHERE ticket_id = %s"
+    query = "UPDATE tickets SET status = 1 WHERE ticket_id = ?"
     data = (int(ticket_id), )
     cur.execute(query, data)
 

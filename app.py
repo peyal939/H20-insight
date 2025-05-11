@@ -80,7 +80,7 @@ def index():
         q = request.form.get("q")
 
         cur, db = get_cursor()
-        query = "SELECT * FROM locations WHERE location_name LIKE %s"
+        query = "SELECT * FROM locations WHERE location_name LIKE ?"
         data = ("%" + str(q) + "%", )
         cur.execute(query, data) 
         search_result = cur.fetchall()

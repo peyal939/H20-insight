@@ -1,6 +1,5 @@
 from flask import Blueprint, request, render_template, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-from decimal import Decimal
 from models.db import get_cursor
 
 # Create profile blueprint
@@ -10,7 +9,7 @@ profile_bp = Blueprint('profile', __name__)
 def profile():
     # Geting all the data of the logged in user
     cur, db = get_cursor()
-    cur.execute("SELECT * FROM users WHERE user_id = %s", (int(session.get("user_id")), ))
+    cur.execute("SELECT * FROM users WHERE user_id = ?", (int(session.get("user_id")), ))
     user_tuple = cur.fetchall()[0]
     cur.close()
     db.close()
@@ -49,7 +48,7 @@ def edit_profile():
 
         # Gets the user data form the database and replace the none with them
         cur, db = get_cursor()
-        cur.execute("SELECT * FROM users WHERE user_id = %s", (session.get("user_id"), ))
+        cur.execute("SELECT * FROM users WHERE user_id = ?", (session.get("user_id"), ))
         user_data_old = cur.fetchall()[0]
         cur.close()
         db.close()
@@ -61,8 +60,8 @@ def edit_profile():
         else:
             # Cheks if email exists or not
             cur, db = get_cursor()
-            cur.execute("SELECT * FROM users WHERE email = %s", (email, ))
-            if cur.rowcount > 0:
+            cur.execute("SELECT * FROM users WHERE email = ?", (email, ))
+            if cur.fetchone():
                 session["error_massage"] = "Email is allready assined to another user please try again"
                 return redirect("/apology")
             user_data_new["email"] = email
@@ -100,7 +99,7 @@ def edit_profile():
         
         # Updating database with the new data (Using old data if new data is not provited by the user)
         cur, db = get_cursor()
-        query = "UPDATE users SET email = %s, latitude = %s, longitude = %s, first_name = %s, last_name = %s WHERE user_id = %s"
+        query = "UPDATE users SET email = ?, latitude = ?, longitude = ?, first_name = ?, last_name = ? WHERE user_id = ?"
         data = (user_data_new["email"], user_data_new["latitude"], user_data_new["longitude"], user_data_new["first_name"], user_data_new["last_name"], session.get("user_id"))
         cur.execute(query, data)
         db.commit()
@@ -129,14 +128,14 @@ def change_password():
             return redirect("/apology")
         
         cur, db = get_cursor()
-        cur.execute("SELECT password_hash FROM users WHERE user_id = %s", (session.get("user_id"), ))
+        cur.execute("SELECT password_hash FROM users WHERE user_id = ?", (session.get("user_id"), ))
         
         # Checking if the privious password is correct
         if check_password_hash(cur.fetchall()[0][0], old_password):
             cur.close()
             db.close()
             cur, db = get_cursor()
-            cur.execute("UPDATE users SET password_hash = %s WHERE user_id = %s", (
+            cur.execute("UPDATE users SET password_hash = ? WHERE user_id = ?", (
                 str(generate_password_hash(password)),
                 session.get("user_id")
             ))

@@ -12,7 +12,13 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Water Quality Dashboard</h1>
                 <h2 class="text-lg text-primary-600 font-medium">{{ location.location_name }}</h2>
-                <p class="text-sm text-gray-500 mt-1">Sample Date: {{ water_data.date_submitted.strftime('%Y-%m-%d %H:%M') if water_data.date_submitted else water_data.date_submitted }}</p>
+                <p class="text-sm text-gray-500 mt-1">Sample Date: 
+                    {% if water_data.date_submitted is string %}
+                        {{ water_data.date_submitted }}
+                    {% else %}
+                        {{ water_data.date_submitted.strftime('%Y-%m-%d %H:%M') if water_data.date_submitted else 'N/A' }}
+                    {% endif %}
+                </p>
             </div>
             <div class="flex space-x-2 mt-4 md:mt-0">
                 <a href="{{ url_for('locations.view', location_id=location.location_id) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md transition duration-200 flex items-center text-sm">

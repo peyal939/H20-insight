@@ -1,7 +1,9 @@
-from flask import Blueprint, request, render_template, session, redirect, url_for, flash
+from flask import Blueprint, request, render_template, session, redirect, url_for, flash, jsonify
 from werkzeug.security import generate_password_hash
 from decimal import Decimal
-from models.db import get_cursor
+from models.db import get_cursor, DatabaseConnection, has_rows
+import os
+import datetime
 
 # Create admin blueprint - This registers all admin routes with Flask
 admin_bp = Blueprint('admin', __name__)
@@ -107,7 +109,7 @@ def admin_user_edit():
         cur, db = get_cursor()
         try:
             # Get user data from database
-            cur.execute("SELECT user_name, email, latitude, longitude, first_name, last_name, user_type FROM users WHERE user_id = %s", (int(user_id), ))
+            cur.execute("SELECT user_name, email, latitude, longitude, first_name, last_name, user_type FROM users WHERE user_id = ?", (int(user_id), ))
             result = cur.fetchall()
             
             # Check if any result was returned
@@ -148,7 +150,7 @@ def admin_user_edit():
 
         # Get current user data first to compare what's being changed
         cur, db = get_cursor()
-        cur.execute("SELECT user_name, email FROM users WHERE user_id = %s", (user_id, ))
+        cur.execute("SELECT user_name, email FROM users WHERE user_id = ?", (user_id, ))
         current_user = cur.fetchone()
         
         # Check if user exists
@@ -167,8 +169,8 @@ def admin_user_edit():
         if user_name and user_name != current_username:
             # Check if username is taken by another user
             cur, db = get_cursor()
-            cur.execute("SELECT * FROM users WHERE user_name = %s AND user_id != %s", (user_name, user_id))
-            if cur.rowcount > 0:
+            cur.execute("SELECT * FROM users WHERE user_name = ? AND user_id != ?", (user_name, user_id))
+            if cur.fetchone():
                 cur.close()
                 db.close()
                 session["error_massage"] = "Username already exists"
@@ -177,7 +179,7 @@ def admin_user_edit():
                 cur.close()
                 db.close()
                 cur, db = get_cursor()
-                cur.execute("UPDATE users SET user_name = %s WHERE user_id = %s", (user_name, user_id))
+                cur.execute("UPDATE users SET user_name = ? WHERE user_id = ?", (user_name, user_id))
                 db.commit()
                 cur.close()
                 db.close()
@@ -187,8 +189,8 @@ def admin_user_edit():
         if email and email != current_email:
             # Check if email is taken by another user
             cur, db = get_cursor()
-            cur.execute("SELECT * FROM users WHERE email = %s AND user_id != %s", (email, user_id))
-            if cur.rowcount > 0:
+            cur.execute("SELECT * FROM users WHERE email = ? AND user_id != ?", (email, user_id))
+            if cur.fetchone():
                 cur.close()
                 db.close()
                 session["error_massage"] = "Email is already in use"
@@ -197,7 +199,7 @@ def admin_user_edit():
                 cur.close()
                 db.close()
                 cur, db = get_cursor()
-                cur.execute("UPDATE users SET email = %s WHERE user_id = %s", (email, user_id))
+                cur.execute("UPDATE users SET email = ? WHERE user_id = ?", (email, user_id))
                 db.commit()
                 cur.close()
                 db.close()
@@ -212,39 +214,23 @@ def admin_user_edit():
             
             # Hash password and update in database
             cur, db = get_cursor()
-            cur.execute("UPDATE users SET password_hash = %s WHERE user_id = %s", (generate_password_hash(password), user_id))
+            cur.execute("UPDATE users SET password_hash = ? WHERE user_id = ?", (generate_password_hash(password), user_id))
             db.commit()
             cur.close()
             db.close()
             changes_made = True
 
-        # Update latitude if provided
-        if latitude:
-            # Validate latitude is within valid range (-90 to 90)
-            if  not (-90 <= float(latitude) <= 90):
-                session["error_massage"] = "latitude must be between (-90) and (90)"
-                return redirect(url_for("auth.apology"))
-
-            cur, db = get_cursor()
-            cur.execute("UPDATE users SET latitude = %s WHERE user_id = %s", (Decimal(latitude), user_id))
-            db.commit()
-            cur.close()
-            db.close()
-            changes_made = True
+        # Update latitude if provided and valid
+        if latitude is not None:
+            if not (-90 <= float(latitude) <= 90):
+                return jsonify({"success": False, "message": "Latitude must be between -90 and 90"})
+            cur.execute("UPDATE users SET latitude = ? WHERE user_id = ?", (float(latitude), user_id))
         
-        # Update longitude if provided
-        if longitude:
-            # Validate longitude is within valid range (-180 to 180)
+        # Update longitude if provided and valid
+        if longitude is not None:
             if not (-180 <= float(longitude) <= 180):
-                session["error_massage"] = "longitude must be between (-180) and (180)"
-                return redirect(url_for("auth.apology"))
-
-            cur, db = get_cursor()
-            cur.execute("UPDATE users SET longitude = %s WHERE user_id = %s", (Decimal(longitude), user_id))
-            db.commit()
-            cur.close()
-            db.close()
-            changes_made = True
+                return jsonify({"success": False, "message": "Longitude must be between -180 and 180"})
+            cur.execute("UPDATE users SET longitude = ? WHERE user_id = ?", (float(longitude), user_id))
 
         # Update first name if provided
         if first_name:
@@ -254,7 +240,7 @@ def admin_user_edit():
                 return redirect(url_for("auth.apology"))
             
             cur, db = get_cursor()
-            cur.execute("UPDATE users SET first_name = %s WHERE user_id = %s", (first_name, user_id))
+            cur.execute("UPDATE users SET first_name = ? WHERE user_id = ?", (first_name, user_id))
             db.commit()
             cur.close()
             db.close()
@@ -268,7 +254,7 @@ def admin_user_edit():
                 return redirect(url_for("auth.apology"))
             
             cur, db = get_cursor()
-            cur.execute("UPDATE users SET last_name = %s WHERE user_id = %s", (last_name, user_id))
+            cur.execute("UPDATE users SET last_name = ? WHERE user_id = ?", (last_name, user_id))
             db.commit()
             cur.close()
             db.close()
@@ -282,7 +268,7 @@ def admin_user_edit():
                 return redirect(url_for("auth.apology"))
             
             cur, db = get_cursor()
-            cur.execute("UPDATE users SET user_type = %s WHERE user_id = %s", (user_type, user_id))
+            cur.execute("UPDATE users SET user_type = ? WHERE user_id = ?", (user_type, user_id))
             db.commit()
             cur.close()
             db.close()
@@ -368,7 +354,7 @@ def admin_location_edit():
         # Display location edit form
         
         cur, db = get_cursor()
-        cur.execute("SELECT location_name, description, latitude, longitude FROM locations WHERE location_id = %s", (location_id, ))
+        cur.execute("SELECT location_name, description, latitude, longitude FROM locations WHERE location_id = ?", (location_id, ))
         result = cur.fetchall()
         
         # Check if any result was returned
@@ -396,8 +382,8 @@ def admin_location_edit():
 
         # Verify location exists before making changes
         cur, db = get_cursor()
-        cur.execute("SELECT location_id FROM locations WHERE location_id = %s", (location_id, ))
-        if cur.rowcount == 0:
+        cur.execute("SELECT location_id FROM locations WHERE location_id = ?", (location_id, ))
+        if not cur.fetchone():
             cur.close()
             db.close()
             session["error_massage"] = f"No location found with ID {location_id}."
@@ -414,8 +400,8 @@ def admin_location_edit():
             
             # Check if location name is already taken by another location
             cur, db = get_cursor()
-            cur.execute("SELECT * FROM locations WHERE location_name = %s AND location_id != %s", (location_name, location_id))
-            if cur.rowcount > 0:
+            cur.execute("SELECT * FROM locations WHERE location_name = ? AND location_id != ?", (location_name, location_id))
+            if cur.fetchone():
                 cur.close()
                 db.close()
                 session["error_massage"] = "Location name taken"
@@ -423,7 +409,7 @@ def admin_location_edit():
            
             # Update location name in database
             cur, db = get_cursor()
-            cur.execute("UPDATE locations SET location_name = %s WHERE location_id = %s", (location_name, location_id))
+            cur.execute("UPDATE locations SET location_name = ? WHERE location_id = ?", (location_name, location_id))
             db.commit()
             cur.close()
             db.close()
@@ -437,38 +423,22 @@ def admin_location_edit():
             
             # Update description in database
             cur, db = get_cursor()
-            cur.execute("UPDATE locations SET description = %s WHERE location_id = %s", (description, location_id))
+            cur.execute("UPDATE locations SET description = ? WHERE location_id = ?", (description, location_id))
             db.commit()
             cur.close()
             db.close()
 
-        # Update latitude if provided
-        if latitude:
-            # Validate latitude is within valid range (-90 to 90)
-            if  not (-90 <= float(latitude) <= 90):
-                session["error_massage"] = "latitude must be between (-90) and (90)"
-                return redirect(url_for("auth.apology"))
-
-            # Update latitude in database
-            cur, db = get_cursor()
-            cur.execute("UPDATE locations SET latitude = %s WHERE location_id = %s", (Decimal(latitude), location_id))
-            db.commit()
-            cur.close()
-            db.close()
+        # Update latitude if provided and valid
+        if latitude is not None:
+            if not (-90 <= float(latitude) <= 90):
+                return jsonify({"success": False, "message": "Latitude must be between -90 and 90"})
+            cur.execute("UPDATE locations SET latitude = ? WHERE location_id = ?", (float(latitude), location_id))
         
-        # Update longitude if provided
-        if longitude:
-            # Validate longitude is within valid range (-180 to 180)
+        # Update longitude if provided and valid
+        if longitude is not None:
             if not (-180 <= float(longitude) <= 180):
-                session["error_massage"] = "longitude must be between (-180) and (180)"
-                return redirect(url_for("auth.apology"))
-
-            # Update longitude in database
-            cur, db = get_cursor()
-            cur.execute("UPDATE locations SET longitude = %s WHERE location_id = %s", (Decimal(longitude), location_id))
-            db.commit()
-            cur.close()
-            db.close()
+                return jsonify({"success": False, "message": "Longitude must be between -180 and 180"})
+            cur.execute("UPDATE locations SET longitude = ? WHERE location_id = ?", (float(longitude), location_id))
 
         return redirect(url_for("admin.admin_location_edit", location_id=location_id))
 
@@ -499,15 +469,15 @@ def delete_user():
     try:
         cur, db = get_cursor()
         # Check if user exists
-        cur.execute("SELECT user_id FROM users WHERE user_id = %s", (int(user_id), ))
-        if cur.rowcount == 0:
+        cur.execute("SELECT user_id FROM users WHERE user_id = ?", (int(user_id), ))
+        if not cur.fetchone():
             cur.close()
             db.close()
             session["error_massage"] = f"No user found with ID {user_id}."
             return redirect(url_for("auth.apology"))
             
         # Delete user from database
-        cur.execute("DELETE FROM users WHERE user_id = %s", (int(user_id), ))
+        cur.execute("DELETE FROM users WHERE user_id = ?", (int(user_id), ))
         db.commit()
         cur.close()
         db.close()
@@ -541,15 +511,15 @@ def delete_location():
     try:
         cur, db = get_cursor()
         # Check if location exists
-        cur.execute("SELECT location_id FROM locations WHERE location_id = %s", (int(location_id), ))
-        if cur.rowcount == 0:
+        cur.execute("SELECT location_id FROM locations WHERE location_id = ?", (int(location_id), ))
+        if not cur.fetchone():
             cur.close()
             db.close()
             session["error_massage"] = f"No location found with ID {location_id}."
             return redirect(url_for("auth.apology"))
             
         # Delete location from database
-        cur.execute("DELETE FROM locations WHERE location_id = %s", (int(location_id), ))
+        cur.execute("DELETE FROM locations WHERE location_id = ?", (int(location_id), ))
         db.commit()
         cur.close()
         db.close()
@@ -584,23 +554,23 @@ def delete_data():
     try:
         cur, db = get_cursor()
         # Check if data exists
-        cur.execute("SELECT data_id FROM data WHERE data_id = %s", (int(data_id), ))
-        if cur.rowcount == 0:
+        cur.execute("SELECT data_id FROM data WHERE data_id = ?", (int(data_id), ))
+        if not cur.fetchone():
             cur.close()
             db.close()
             session["error_massage"] = f"No data found with ID {data_id}."
             return redirect(url_for("auth.apology"))
             
         # Check if location exists
-        cur.execute("SELECT location_id FROM locations WHERE location_id = %s", (int(location_id), ))
-        if cur.rowcount == 0:
+        cur.execute("SELECT location_id FROM locations WHERE location_id = ?", (int(location_id), ))
+        if not cur.fetchone():
             cur.close()
             db.close()
             session["error_massage"] = f"No location found with ID {location_id}."
             return redirect(url_for("auth.apology"))
             
         # Delete data from database
-        cur.execute("DELETE FROM data WHERE data_id = %s", (int(data_id), ))
+        cur.execute("DELETE FROM data WHERE data_id = ?", (int(data_id), ))
         db.commit()
         cur.close()
         db.close()

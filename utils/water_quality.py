@@ -3,6 +3,8 @@ Water Quality Analysis Utility
 Provides analysis and interpretation of water quality parameters
 """
 
+import sqlite3
+
 # Define safety thresholds for different parameters
 # These values are based on common guidelines but should be verified for your specific context
 THRESHOLDS = {
@@ -185,11 +187,15 @@ def analyze_water_quality(water_data):
     Analyze water quality parameters and generate a summary
     
     Args:
-        water_data: Dictionary with water quality parameters
+        water_data: Dictionary or sqlite3.Row with water quality parameters
         
     Returns:
         Dictionary with analysis results
     """
+    # Convert sqlite3.Row to dictionary if needed
+    if isinstance(water_data, sqlite3.Row):
+        water_data = dict(water_data)
+        
     # Clean and convert data
     clean_data = {}
     for key, value in water_data.items():

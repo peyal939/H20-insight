@@ -3,6 +3,7 @@ PDF Generation Utility for Water Quality Reports
 """
 import os
 import tempfile
+import sqlite3
 from datetime import datetime
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -16,14 +17,21 @@ def generate_water_quality_report(location, water_data, analysis):
     Generate a PDF report for water quality analysis using ReportLab
     
     Args:
-        location: Dictionary containing location information
-        water_data: Dictionary containing water quality parameters
+        location: Dictionary or sqlite3.Row containing location information
+        water_data: Dictionary or sqlite3.Row containing water quality parameters
         analysis: Dictionary containing analysis results
         
     Returns:
         Path to the generated PDF file
     """
     try:
+        # Convert sqlite3.Row objects to dictionaries if needed
+        if isinstance(location, sqlite3.Row):
+            location = dict(location)
+            
+        if isinstance(water_data, sqlite3.Row):
+            water_data = dict(water_data)
+            
         # Create a temporary file for the PDF
         pdf_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
         pdf_file.close()

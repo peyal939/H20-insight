@@ -1,6 +1,5 @@
 from flask import Blueprint, request, render_template, session, redirect, url_for
-from decimal import Decimal
-from models.db import get_cursor, DatabaseConnection
+from models.db import get_cursor, DatabaseConnection, has_rows
 
 # Create locations blueprint - manages all location-related functionality
 locations_bp = Blueprint('locations', __name__)
@@ -38,11 +37,11 @@ def add_location():
         # Check if the location already exists
         try:
             with DatabaseConnection() as (cur, db):
-                query = "SELECT * FROM locations WHERE location_name = %s"
+                query = "SELECT * FROM locations WHERE location_name = ?"
                 data = (location_name, )
                 cur.execute(query, data)
                 
-                if cur.rowcount > 0:
+                if cur.fetchone():
                     session["error_massage"] = "The name of the river must be unique"
                     return redirect(url_for("auth.apology"))
         except Exception as e:
@@ -51,18 +50,18 @@ def add_location():
 
         try: 
             # Set default latitude and longitude to 0.0
-            latitude = Decimal("0.0")
-            longitude = Decimal("0.0")
+            latitude = 0.0
+            longitude = 0.0
             
             with DatabaseConnection() as (cur, db):
                 # Insert new location with or without description
                 if description:
-                    query = "INSERT INTO locations (user_id, location_name, description, latitude, longitude) VALUES (%s, %s, %s, %s, %s)"
+                    query = "INSERT INTO locations (user_id, location_name, description, latitude, longitude) VALUES (?, ?, ?, ?, ?)"
                     data = (session.get("user_id"), location_name, description, latitude, longitude)    
                     cur.execute(query, data)
                 
                 else:
-                    query = "INSERT INTO locations (user_id, location_name, latitude, longitude) VALUES (%s, %s, %s, %s)"
+                    query = "INSERT INTO locations (user_id, location_name, latitude, longitude) VALUES (?, ?, ?, ?)"
                     data = (session.get("user_id"), location_name, latitude, longitude)
                     cur.execute(query, data)
                 
@@ -70,7 +69,7 @@ def add_location():
                 db.commit()
                 
                 # Get the ID of the newly added location
-                query = "SELECT * FROM locations WHERE user_id = %s ORDER BY date_submitted DESC"
+                query = "SELECT * FROM locations WHERE user_id = ? ORDER BY date_submitted DESC"
                 data = (int(session["user_id"]), )
                 cur.execute(query, data)
                 location_id = int(cur.fetchall()[0][0])
@@ -133,7 +132,7 @@ def add_location():
             try:
                 # Save the water quality data to the database
                 with DatabaseConnection() as (cur, db):
-                    query = "INSERT INTO data (location_id, user_id, ph, bod, cod, temperature, ammonia, arsenic, calcium, ec, coliform, hardness, lead_pb, nitrogen, sodium, sulfate, tss, turbidity, tds) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    query = "INSERT INTO data (location_id, user_id, ph, bod, cod, temperature, ammonia, arsenic, calcium, ec, coliform, hardness, lead_pb, nitrogen, sodium, sulfate, tss, turbidity, tds) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     data = (location_id, user_id, ph, bod, cod, temperature, ammonia, arsenic, calcium, ec, coliform, hardness, lead_pb, nitrogen, sodium, sulfate, tss, turbidity, tds)
                     cur.execute(query, data)
                     db.commit()
@@ -163,7 +162,7 @@ def edit_location():
         # Get location data from database
         cur, db = get_cursor()
 
-        query = "SELECT * FROM locations WHERE location_id = %s"
+        query = "SELECT * FROM locations WHERE location_id = ?"
         data = (int(location_id), )
         cur.execute(query, data)
 
@@ -228,19 +227,19 @@ def edit_location_function():
             session["error_massage"] = "longitude must be between (-180) and (180)"
             return redirect("/apology")
     
-        # Convert coordinates to Decimal for database
-        latitude = Decimal(latitude)
-        longitude = Decimal(longitude)
+        # Convert coordinates to float for database
+        latitude = float(latitude)
+        longitude = float(longitude)
     
     # If no new coordinates provided, use original ones
     if not latitude and not longitude:
-        latitude = Decimal(old_latitude)
-        longitude = Decimal(old_logitude)
+        latitude = float(old_latitude)
+        longitude = float(old_logitude)
 
     # Update the location in database
     cur, db = get_cursor()
 
-    query = "UPDATE locations SET description = %s, latitude = %s, longitude = %s WHERE location_id = %s"
+    query = "UPDATE locations SET description = ?, latitude = ?, longitude = ? WHERE location_id = ?"
     data = (description, latitude, longitude, int(location_id))
     cur.execute(query, data)
 
@@ -268,54 +267,55 @@ def view():
     try:
         # Get the location data from database
         with DatabaseConnection() as (cur, db):
-            query = "SELECT * FROM locations WHERE location_id = %s"
+            query = "SELECT * FROM locations WHERE location_id = ?"
             data = (int(location_id), )
             cur.execute(query, data)
 
             # Check if location exists
-            if cur.rowcount == 0:
+            location_data_row = cur.fetchone()
+            if not location_data_row:
                 session["error_massage"] = "The location you are requesting does not exist"
                 return redirect(url_for("auth.apology"))
             
             # Get location data
-            location_data = list(cur.fetchall()[0])
+            location_data = list(location_data_row)
             
             # Get the latest water quality data for the location
-            query = "SELECT * FROM data WHERE location_id = %s ORDER BY date_submitted DESC"
+            query = "SELECT * FROM data WHERE location_id = ? ORDER BY date_submitted DESC"
             data = (int(location_id), )
             cur.execute(query, data)
 
             # If the location has no water quality data
-            if cur.rowcount == 0:
+            data_tuple = cur.fetchone()
+            if not data_tuple:
                 parameter_data = None
                 date = None
                 data_id = None
             else:
                 # If water quality data exists
                 # Create a list of data parameters for the HTML table
-                data_tupe = cur.fetchall()[0]
-                date = data_tupe[3]  # Date submitted
-                data_id = data_tupe[0]  # Data ID
+                date = data_tuple[3]  # Date submitted
+                data_id = data_tuple[0]  # Data ID
                 
                 # Format data for display with proper units - fix inconsistent labels
                 parameter_data = [
-                    ("pH", data_tupe[4]),
-                    ("BOD (mg/l)", data_tupe[5]),
-                    ("COD (mg/l)", data_tupe[6]),
-                    ("Temperature (ᵒC)", data_tupe[7]),
-                    ("Ammonia (mg/l)", data_tupe[8]),
-                    ("Arsenic (mg/l)", data_tupe[9]),
-                    ("Calcium (mg/l)", data_tupe[10]),
-                    ("EC (μS/cm)", data_tupe[11]),
-                    ("Coliform (Fecal) (N/100ml)", data_tupe[12]),
-                    ("Hardness (mg/l)", data_tupe[13]),
-                    ("Lead (mg/l)", data_tupe[14]),
-                    ("Nitrogen (mg/l)", data_tupe[15]),
-                    ("Sodium (mg/l)", data_tupe[16]),
-                    ("Sulfate (mg/l)", data_tupe[17]),
-                    ("TSS (mg/l)", data_tupe[18]),
-                    ("Turbidity (NTU)", data_tupe[19]),
-                    ("TDS (mg/l)", data_tupe[20])
+                    ("pH", data_tuple[4]),
+                    ("BOD (mg/l)", data_tuple[5]),
+                    ("COD (mg/l)", data_tuple[6]),
+                    ("Temperature (ᵒC)", data_tuple[7]),
+                    ("Ammonia (mg/l)", data_tuple[8]),
+                    ("Arsenic (mg/l)", data_tuple[9]),
+                    ("Calcium (mg/l)", data_tuple[10]),
+                    ("EC (μS/cm)", data_tuple[11]),
+                    ("Coliform (Fecal) (N/100ml)", data_tuple[12]),
+                    ("Hardness (mg/l)", data_tuple[13]),
+                    ("Lead (mg/l)", data_tuple[14]),
+                    ("Nitrogen (mg/l)", data_tuple[15]),
+                    ("Sodium (mg/l)", data_tuple[16]),
+                    ("Sulfate (mg/l)", data_tuple[17]),
+                    ("TSS (mg/l)", data_tuple[18]),
+                    ("Turbidity (NTU)", data_tuple[19]),
+                    ("TDS (mg/l)", data_tuple[20])
                 ]    
     except ValueError:
         # Handle invalid location ID format

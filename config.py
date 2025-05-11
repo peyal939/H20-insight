@@ -2,10 +2,7 @@ import os
 
 # Database configuration
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "4044",
-    "database": "water"
+    "database": "water.db"  # SQLite database file
 }
 
 # App configuration

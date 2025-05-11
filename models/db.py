@@ -1,26 +1,46 @@
-import mysql.connector
+import sqlite3
 from config import DB_CONFIG
 import sys
+import os
+
+# Ensure the database file exists
+DB_PATH = DB_CONFIG["database"]
 
 # Create a database connection
 def get_db_connection():
     try:
-        connection = mysql.connector.connect(
-            host=DB_CONFIG["host"],
-            user=DB_CONFIG["user"],
-            password=DB_CONFIG["password"],
-            database=DB_CONFIG["database"]
-        )
+        connection = sqlite3.connect(DB_PATH)
+        # Enable foreign keys
+        connection.execute("PRAGMA foreign_keys = ON")
+        # Return dictionary-like objects for rows
+        connection.row_factory = sqlite3.Row
         return connection
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Database connection error: {err}", file=sys.stderr)
         raise
+
+# Function to check if a result set has rows (replacement for cur.rowcount check)
+def has_rows(cursor):
+    """Check if the cursor result has any rows"""
+    row = cursor.fetchone()
+    if row:
+        # Reset cursor by re-executing the last query
+        cursor.execute(cursor.statement, cursor.getconnection().last_execute_params or ())
+        return True
+    return False
 
 # Get a cursor for database operations
 def get_cursor(dictionary=False):
     """Get a database cursor and connection"""
-    db = mysql.connector.connect(**DB_CONFIG)
-    cur = db.cursor(buffered=True, dictionary=dictionary)
+    db = sqlite3.connect(DB_PATH)
+    # Enable foreign keys
+    db.execute("PRAGMA foreign_keys = ON")
+    
+    if dictionary:
+        db.row_factory = sqlite3.Row
+    
+    cur = db.cursor()
+    
     return cur, db
 
 class DatabaseConnection:
@@ -32,8 +52,14 @@ class DatabaseConnection:
         
     def __enter__(self):
         """Open the database connection when entering the context"""
-        self.connection = mysql.connector.connect(**DB_CONFIG)
-        self.cursor = self.connection.cursor(buffered=True, dictionary=self.dictionary)
+        self.connection = sqlite3.connect(DB_PATH)
+        # Enable foreign keys
+        self.connection.execute("PRAGMA foreign_keys = ON")
+        
+        if self.dictionary:
+            self.connection.row_factory = sqlite3.Row
+            
+        self.cursor = self.connection.cursor()
         return self.cursor, self.connection
         
     def __exit__(self, exc_type, exc_val, exc_tb):

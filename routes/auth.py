@@ -1,6 +1,5 @@
 from flask import Blueprint, request, render_template, session, redirect, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
-from decimal import Decimal
 from models.db import get_cursor
 
 # Create auth blueprint
@@ -39,11 +38,11 @@ def register():
         # Check if username is taken or email is already in use
         cur, db = get_cursor()
 
-        query = "SELECT * FROM users WHERE user_name = %s or email = %s"
+        query = "SELECT * FROM users WHERE user_name = ? or email = ?"
         data = (user_name, email)
         cur.execute(query, data)
         
-        if cur.rowcount > 0:
+        if cur.fetchone():
             cur.close()
             db.close()
             session["error_massage"] = "Username taken or email allready in use"
@@ -54,8 +53,8 @@ def register():
 
         cur, db = get_cursor()
 
-        query = "INSERT INTO users (user_name, email, password_hash, user_type, latitude, longitude, first_name, last_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-        data = (user_name, email, str(generate_password_hash(password)), user_type, Decimal("0.0"), Decimal("0.0"), first_name, last_name)
+        query = "INSERT INTO users (user_name, email, password_hash, user_type, latitude, longitude, first_name, last_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        data = (user_name, email, str(generate_password_hash(password)), user_type, 0.0, 0.0, first_name, last_name)
         cur.execute(query, data)
         
         db.commit()
@@ -87,14 +86,17 @@ def login():
 
         cur, db = get_cursor()
 
-        query = "SELECT * FROM users WHERE user_name = %s OR email = %s"
+        query = "SELECT * FROM users WHERE user_name = ? OR email = ?"
         data = (identification, identification)
         cur.execute(query, data)
         
-        if cur.rowcount == 0:
+        user = cur.fetchone()
+        if not user:
             session["error_massage"] = "Invalid username or email"
             return redirect("/apology")
         
+        # Re-execute to get all columns since we consumed the result
+        cur.execute(query, data)
         user = cur.fetchall()[0]
 
         #  user[3] = password_hash

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template, session, redirect, url_for, send_file
-from models.db import get_cursor, DatabaseConnection
+from models.db import get_cursor, DatabaseConnection, has_rows
 from utils.water_quality import analyze_water_quality
 from utils.pdf_generator import generate_water_quality_report
 import os
@@ -28,7 +28,7 @@ def add_data():
         location_id = session.get("location_id")
     
         # Function to safely convert string values to float or None
-        # Prevents data truncation errors in MySQL
+        # Ensures data type consistency for SQLite
         def safe_float(value):
             if value is None or value == "":
                 return None
@@ -65,7 +65,7 @@ def add_data():
         # Use a context manager to ensure database connection is properly closed
         try:
             with DatabaseConnection() as (cur, db):
-                query = "INSERT INTO data (location_id, user_id, ph, bod, cod, temperature, ammonia, arsenic, calcium, ec, coliform, hardness, lead_pb, nitrogen, sodium, sulfate, tss, turbidity, tds) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                query = "INSERT INTO data (location_id, user_id, ph, bod, cod, temperature, ammonia, arsenic, calcium, ec, coliform, hardness, lead_pb, nitrogen, sodium, sulfate, tss, turbidity, tds) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 data = (location_id, user_id, ph, bod, cod, temperature, ammonia, arsenic, calcium, ec, coliform, hardness, lead_pb, nitrogen, sodium, sulfate, tss, turbidity, tds)
                 cur.execute(query, data)
                 db.commit()
@@ -92,7 +92,7 @@ def all_location_data():
 
     cur, db = get_cursor()
     # Get all data for a location ordered by date (newest first)
-    query = "SELECT * FROM data WHERE location_id = %s ORDER BY date_submitted DESC"
+    query = "SELECT * FROM data WHERE location_id = ? ORDER BY date_submitted DESC"
     data = (int(location_id), )
     cur.execute(query, data)
 
@@ -118,7 +118,7 @@ def view_data():
         # Get location information
         cur, db = get_cursor()
 
-        query = "SELECT * FROM locations WHERE location_id = %s LIMIT 1"
+        query = "SELECT * FROM locations WHERE location_id = ? LIMIT 1"
         data = (int(location_id), )
         cur.execute(query, data)
 
@@ -129,7 +129,7 @@ def view_data():
         # Get specific water quality data entry
         cur, db = get_cursor()
 
-        query = "SELECT * FROM data WHERE data_id = %s AND location_id = %s LIMIT 1"
+        query = "SELECT * FROM data WHERE data_id = ? AND location_id = ? LIMIT 1"
         data = (int(data_id), int(location_id))
         cur.execute(query, data)
 
@@ -186,7 +186,7 @@ def compare_between():
         # Use context manager to ensure connections are closed
         try:
             with DatabaseConnection() as (cur, db):
-                query = "SELECT * FROM data WHERE location_id = %s ORDER BY date_submitted DESC"
+                query = "SELECT * FROM data WHERE location_id = ? ORDER BY date_submitted DESC"
                 data = (int(location_id), )
                 cur.execute(query, data)
                 data_list = cur.fetchall()
@@ -210,7 +210,7 @@ def compare_between():
             # Get location and data in a more robust manner with exception handling
             with DatabaseConnection() as (cur, db):
                 # Get location information
-                query = "SELECT * FROM locations WHERE location_id = %s"
+                query = "SELECT * FROM locations WHERE location_id = ?"
                 data = (int(location_id), )
                 cur.execute(query, data)
                 location_data_tuple = cur.fetchall()[0]
@@ -223,8 +223,8 @@ def compare_between():
                 }
                 
                 # Get both data entries in a single connection
-                query1 = "SELECT * FROM data WHERE data_id = %s"
-                query2 = "SELECT * FROM data WHERE data_id = %s"
+                query1 = "SELECT * FROM data WHERE data_id = ?"
+                query2 = "SELECT * FROM data WHERE data_id = ?"
                 
                 cur.execute(query1, (int(data_id_1),))
                 data_tupe = cur.fetchall()[0]
@@ -355,7 +355,7 @@ def compare_between_locations():
         try:
             with DatabaseConnection() as (cur, db):
                 # Get location names
-                query = "SELECT location_name FROM locations WHERE location_id IN (%s, %s)"
+                query = "SELECT location_name FROM locations WHERE location_id IN (?, ?)"
                 data = (int(location_id_1), int(location_id_2))
                 cur.execute(query, data)
                 locations_list_tupe = cur.fetchall()
@@ -368,7 +368,7 @@ def compare_between_locations():
                 compare_in = request.form.get("compare_in")
                 
                 # Get data for both locations in a single connection
-                query = "SELECT * FROM data WHERE location_id = %s ORDER BY date_submitted DESC LIMIT 1"
+                query = "SELECT * FROM data WHERE location_id = ? ORDER BY date_submitted DESC LIMIT 1"
                 
                 # Get data for location 1
                 cur.execute(query, (int(location_id_1),))
@@ -464,19 +464,18 @@ def analyze_water(data_id):
     try:
         with DatabaseConnection(dictionary=True) as (cur, db):
             # Get data parameters
-            query = "SELECT * FROM data WHERE data_id = %s"
+            query = "SELECT * FROM data WHERE data_id = ?"
             data = (data_id, )
             cur.execute(query, data)
             
-            if cur.rowcount == 0:
+            water_data = cur.fetchone()
+            if not water_data:
                 session["error_massage"] = "Data not found"
                 return redirect(url_for("auth.apology"))
             
-            water_data = cur.fetchone()
-            
             # Get location information
             location_id = water_data["location_id"]
-            query = "SELECT * FROM locations WHERE location_id = %s"
+            query = "SELECT * FROM locations WHERE location_id = ?"
             data = (location_id, )
             cur.execute(query, data)
             location = cur.fetchone()
@@ -505,19 +504,18 @@ def download_report(data_id):
     try:
         with DatabaseConnection(dictionary=True) as (cur, db):
             # Get data parameters
-            query = "SELECT * FROM data WHERE data_id = %s"
+            query = "SELECT * FROM data WHERE data_id = ?"
             data = (data_id, )
             cur.execute(query, data)
             
-            if cur.rowcount == 0:
+            water_data = cur.fetchone()
+            if not water_data:
                 session["error_massage"] = "Data not found"
                 return redirect(url_for("auth.apology"))
             
-            water_data = cur.fetchone()
-            
             # Get location information
             location_id = water_data["location_id"]
-            query = "SELECT * FROM locations WHERE location_id = %s"
+            query = "SELECT * FROM locations WHERE location_id = ?"
             data = (location_id, )
             cur.execute(query, data)
             location = cur.fetchone()
@@ -572,19 +570,18 @@ def gauge_visualization(data_id):
     try:
         with DatabaseConnection(dictionary=True) as (cur, db):
             # Get data parameters
-            query = "SELECT * FROM data WHERE data_id = %s"
+            query = "SELECT * FROM data WHERE data_id = ?"
             data = (data_id, )
             cur.execute(query, data)
             
-            if cur.rowcount == 0:
+            water_data = cur.fetchone()
+            if not water_data:
                 session["error_massage"] = "Data not found"
                 return redirect(url_for("auth.apology"))
             
-            water_data = cur.fetchone()
-            
             # Get location information
             location_id = water_data["location_id"]
-            query = "SELECT * FROM locations WHERE location_id = %s"
+            query = "SELECT * FROM locations WHERE location_id = ?"
             data = (location_id, )
             cur.execute(query, data)
             location = cur.fetchone()
