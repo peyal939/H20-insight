@@ -79,7 +79,7 @@ def index():
             # Show landing page for non-logged-in users
             return render_template("index.html", current_time=datetime.now().strftime('%Y-%m-%d %H:%M'))
         
-    if request.method == "POST":
+    elif request.method == "POST":
         q = request.form.get("q")
 
         cur, db = get_cursor()
@@ -92,6 +92,9 @@ def index():
         db.close()
 
         return render_template("search.html", search_result=search_result, q=str(q))
+    
+    # Add a default return for any other unhandled cases
+    return render_template("index.html", current_time=datetime.now().strftime('%Y-%m-%d %H:%M'))
 
 
 # Add this at the end of the file
