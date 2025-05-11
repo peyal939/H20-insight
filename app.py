@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
 from config import SECRET_KEY, SESSION_TYPE, SESSION_PERMANENT
 from datetime import datetime
+import os
 
 # Import blueprints
 from routes.auth import auth_bp
@@ -99,5 +100,6 @@ def index():
 
 # Add this at the end of the file
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
     
